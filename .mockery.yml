@@ -2,7 +2,7 @@
 # Documentation: https://vektra.github.io/mockery/latest/configuration/
 
 all: false
-dir: "mocks/{{.InterfaceName}}"
+dir: "internal/mocks/{{.InterfaceName}}"
 filename: "mock_{{.InterfaceName}}.go"
 structname: "Mock{{.InterfaceName}}"
 pkgname: mocks
@@ -11,12 +11,12 @@ log-level: info
 template: testify
 
 packages:
-  github.com/unser-elefant/remnawave-go/service:
+  github.com/unser-elefant/remnawave-go/internal/service:
     interfaces:
       userAPI:
       deviceAPI:
 
-  github.com/unser-elefant/remnawave-go/api:
+  github.com/unser-elefant/remnawave-go/internal/api:
     interfaces:
       HTTPClient:
 
