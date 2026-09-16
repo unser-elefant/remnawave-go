@@ -32,7 +32,6 @@ var (
 	ErrBadRequest       = lowlevel.ErrBadRequest
 	ErrUnauthorized     = lowlevel.ErrUnauthorized
 	ErrAPIError         = lowlevel.ErrAPIError
-	ErrInvalidUserID    = domain.ErrInvalidUserID
 )
 
 type Config struct {
