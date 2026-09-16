@@ -1,0 +1,22 @@
+# Mockery v3 Configuration
+# Documentation: https://vektra.github.io/mockery/latest/configuration/
+
+all: false
+dir: "mocks/{{.InterfaceName}}"
+filename: "mock_{{.InterfaceName}}.go"
+structname: "Mock{{.InterfaceName}}"
+pkgname: mocks
+recursive: false
+log-level: info
+template: testify
+
+packages:
+  github.com/unser-elefant/remnawave-go/service:
+    interfaces:
+      userAPI:
+      deviceAPI:
+
+  github.com/unser-elefant/remnawave-go/api:
+    interfaces:
+      HTTPClient:
+
