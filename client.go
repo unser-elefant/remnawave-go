@@ -114,10 +114,7 @@ func New(cfg Config) (*Client, error) {
 	deviceAPI := apiClient.NewDeviceAPI(apiURL.String(), httpClient)
 
 	return &Client{
-		users: servicepkg.NewUserService(
-			userAPI,
-			l,
-		),
+		users: servicepkg.NewUserService(userAPI,l),
 		devices: servicepkg.NewDeviceService(deviceAPI, l),
 	}, nil
 }
