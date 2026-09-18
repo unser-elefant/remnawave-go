@@ -22,8 +22,8 @@ func newTestUserService(api *mocks_userapi.MockuserAPI) *UserService {
 	return NewUserService(api, slog.Default())
 }
 
-func newRegisterRequest(telegramID int64, username string) domain.RegisterUserRequest {
-	return domain.RegisterUserRequest{
+func newRegisterRequest(telegramID int64, username string) *domain.RegisterUserRequest {
+	return &domain.RegisterUserRequest{
 		TelegramID: telegramID,
 		Username:   username,
 		ExpiresAt:  time.Now().Add(48 * time.Hour),

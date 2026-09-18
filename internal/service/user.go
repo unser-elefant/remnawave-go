@@ -77,9 +77,12 @@ func (u *UserService) GetUserByTelegramID(ctx context.Context, telegramID int64)
 	return user, nil
 }
 
-func (u *UserService) Register(ctx context.Context, request domain.RegisterUserRequest) error {
+func (u *UserService) Register(ctx context.Context, request *domain.RegisterUserRequest) error {
 	if u == nil || u.api == nil {
 		return errors.New("user service is not initialized")
+	}
+	if request == nil {
+		return errors.New("request is not initialized")
 	}
 	if err := request.Validate(); err != nil {
 		return err

@@ -65,7 +65,7 @@ func (c Config) Validate() error {
 
 type UserService interface {
 	GetUserByTelegramID(ctx context.Context, telegramID int64) (*domain.User, error)
-	Register(ctx context.Context, request RegisterUserRequest) error
+	Register(ctx context.Context, request *RegisterUserRequest) error
 	IsUserExists(ctx context.Context, telegramID int64) (bool, error)
 	RevokeSubscription(ctx context.Context, id uint64) error
 }
@@ -114,7 +114,7 @@ func New(cfg Config) (*Client, error) {
 	deviceAPI := apiClient.NewDeviceAPI(apiURL.String(), httpClient)
 
 	return &Client{
-		users: servicepkg.NewUserService(userAPI,l),
+		users:   servicepkg.NewUserService(userAPI, l),
 		devices: servicepkg.NewDeviceService(deviceAPI, l),
 	}, nil
 }
