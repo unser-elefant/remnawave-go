@@ -22,7 +22,7 @@ type dispatcher interface {
 	Publish(ctx context.Context, p *payload.RemnawaveWebhook) (bool, error)
 }
 
-type unhandledFunc func(payload *payload.RemnawaveWebhook)
+type unhandledFunc func(ctx context.Context, payload *payload.RemnawaveWebhook)
 
 type Processor struct {
 	l  logger
@@ -67,7 +67,7 @@ func (p *Processor) Process(ctx context.Context, body []byte, signature string, 
 	}
 
 	if !handled {
-		p.uf(&webhookPayload)
+		p.uf(ctx, &webhookPayload)
 		return fmt.Errorf("unknown webhook event: scope=%s event=%s", webhookPayload.Scope, webhookPayload.Event)
 	}
 

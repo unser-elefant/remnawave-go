@@ -95,7 +95,7 @@ func TestProcess_RejectsCanceledContextBeforePublish(t *testing.T) {
 func TestProcess_ReportsUnhandledWebhook(t *testing.T) {
 	dispatcher := &dispatcherStub{}
 	var unhandledPayload *payload.RemnawaveWebhook
-	service := validProcessor(dispatcher, validatorStub{signatureValid: true, ipValid: true}, func(p *payload.RemnawaveWebhook) {
+	service := validProcessor(dispatcher, validatorStub{signatureValid: true, ipValid: true}, func(ctx context.Context, p *payload.RemnawaveWebhook) {
 		unhandledPayload = p
 	})
 	body, err := json.Marshal(payload.RemnawaveWebhook{Scope: payload.ScopeUser, Event: payload.Event("user.custom")})
