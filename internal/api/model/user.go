@@ -27,7 +27,7 @@ type User struct {
 	Email                  *string     `json:"email"`
 	Description            *string     `json:"description"`
 	Tag                    *string     `json:"tag"`
-	HWIDDeviceLimit        *int        `json:"hwidDeviceLimit"`
+	HWIDDeviceLimit        *int64      `json:"hwidDeviceLimit"`
 	ExternalSquadUUID      *string     `json:"externalSquadUuid"`
 	TrojanPassword         string      `json:"trojanPassword"`
 	VlessUUID              string      `json:"vlessUuid"`

@@ -41,7 +41,7 @@ type User struct {
 	TrafficStrategy  TrafficLimitStrategy
 	LastTrafficReset *time.Time
 
-	DeviceLimit int
+	DeviceLimit int64
 
 	SubscriptionURL string
 

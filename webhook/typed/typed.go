@@ -21,9 +21,9 @@ func TypedWebhookHandler[T any](parser WebhookParser[T], h func(context.Context,
 }
 
 func ParseWebhookData[T any](p *payload.RemnawaveWebhook) (T, error) {
-	var zero T
-	if err := json.Unmarshal(p.Data, &zero); err != nil {
-		return zero, fmt.Errorf("parse webhook data: %w", err)
+	var data T
+	if err := json.Unmarshal(p.Data, &data); err != nil {
+		return data, fmt.Errorf("parse webhook data: %w", err)
 	}
-	return zero, nil
+	return data, nil
 }
