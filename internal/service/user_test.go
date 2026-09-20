@@ -417,7 +417,7 @@ func BenchmarkUserService_RegisterUserValidation(b *testing.B) {
 			Username:             username,
 			ExpireAt:             time.Now().Add(2 * 24 * time.Hour).Format(time.RFC3339),
 			TelegramID:           telegramID,
-			HWIDDeviceLimit:      &[]int{5}[0],
+			HWIDDeviceLimit:      &[]int64{5}[0],
 			ActiveInternalSquads: []string{"default"},
 		})
 	}

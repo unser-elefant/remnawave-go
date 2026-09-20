@@ -58,7 +58,7 @@ type CreateUserRequest struct {
 	Tag                  *string  `json:"tag,omitempty"`                  // Optional. Max 16 chars, pattern: ^[A-Z0-9_]+$
 	TelegramID           *int64   `json:"telegramId,omitempty"`           // Optional. Telegram user ID
 	Email                *string  `json:"email,omitempty"`                // Optional. Valid email format
-	HWIDDeviceLimit      *int     `json:"hwidDeviceLimit,omitempty"`      // Optional. Min: 0
+	HWIDDeviceLimit      *int64   `json:"hwidDeviceLimit,omitempty"`      // Optional. Min: 0
 	ActiveInternalSquads []string `json:"activeInternalSquads,omitempty"` // Optional. Array of squad UUIDs
 	UUID                 *string  `json:"uuid,omitempty"`                 // Optional. Specific UUID, otherwise auto-generated
 	ExternalSquadUUID    *string  `json:"externalSquadUuid,omitempty"`    // Optional. External squad UUID
@@ -69,7 +69,7 @@ type CreateUserInitInfo struct {
 	ExpireAt             string   `json:"expireAt"`
 	TelegramID           int64    `json:"telegramId"`
 	ActiveInternalSquads []string `json:"activeInternalSquads"`
-	HWIDDeviceLimit      *int     `json:"hwidDeviceLimit"`
+	HWIDDeviceLimit      *int64   `json:"hwidDeviceLimit"`
 	Description          *string  `json:"description"`
 	Status               *string  `json:"status"`
 	TrafficLimitBytes    *int64   `json:"trafficLimitBytes"`

@@ -37,7 +37,7 @@ func TestRegisterUserRequestValidate(t *testing.T) {
 }
 
 func TestRegisterUserRequestValidateRejectsNegativeDeviceLimit(t *testing.T) {
-	limit := -1
+	limit := int64(-1)
 	err := (RegisterUserRequest{
 		TelegramID:      12345,
 		Username:        "alice",

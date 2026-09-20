@@ -10,7 +10,7 @@ type RegisterUserRequest struct {
 	TelegramID           int64
 	Username             string
 	ExpiresAt            time.Time
-	HWIDDeviceLimit      *int
+	HWIDDeviceLimit      *int64
 	ActiveInternalSquads []string
 }
 
