@@ -36,33 +36,54 @@ type errReader struct{}
 func (errReader) Read([]byte) (int, error) { return 0, errors.New("read failed") }
 
 func newTestHandler(p processor) *Handler {
-	return New(
+	h, err := New(
 		p,
 		testLogger{},
 		1024,
 		1,
-		make(chan struct{}),
-		func(requestID string) context.Context { return requestid.With(context.Background(), requestID) },
 		time.Second,
 	)
+	if err != nil {
+		panic(err)
+	}
+	return h
 }
 
 func TestNewHandler_UsesProvidedMaxBodySize(t *testing.T) {
-	h := New(
+	h, err := New(
 		processorStub{},
 		testLogger{},
 		2048,
 		1,
-		make(chan struct{}),
-		func(requestID string) context.Context { return requestid.With(context.Background(), requestID) },
 		time.Second,
 	)
+	require.NoError(t, err)
 	assert.Equal(t, int64(2048), h.maxBodySize)
+}
+
+func TestNewHandler_RejectsInvalidConfiguration(t *testing.T) {
+	tests := []struct {
+		name           string
+		maxBodySize    int64
+		maxWorkers     int
+		processTimeout time.Duration
+	}{
+		{name: "body size", maxBodySize: 0, maxWorkers: 1, processTimeout: time.Second},
+		{name: "workers", maxBodySize: 1024, maxWorkers: 0, processTimeout: time.Second},
+		{name: "process timeout", maxBodySize: 1024, maxWorkers: 1, processTimeout: 0},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := New(processorStub{}, testLogger{}, tt.maxBodySize, tt.maxWorkers, tt.processTimeout)
+			require.Error(t, err)
+		})
+	}
 }
 
 func TestHandleWebhook_Success(t *testing.T) {
 	called := make(chan struct{}, 1)
-	h := New(processorStub{
+	h, err := New(processorStub{
 		process: func(ctx context.Context, body []byte, signature string, remoteAddr string) error {
 			called <- struct{}{}
 			id, ok := requestid.FromContext(ctx)
@@ -72,9 +93,8 @@ func TestHandleWebhook_Success(t *testing.T) {
 			assert.Empty(t, signature)
 			return nil
 		},
-	}, testLogger{}, 1024, 1, make(chan struct{}), func(requestID string) context.Context {
-		return requestid.With(context.Background(), requestID)
-	}, time.Second)
+	}, testLogger{}, 1024, 1, time.Second)
+	require.NoError(t, err)
 
 	req := httptest.NewRequest(http.MethodPost, "/webhook", strings.NewReader(`{"ok":true}`))
 	req.Header.Set(requestid.HeaderRequestID, "existing-request-id")
@@ -102,7 +122,7 @@ func TestHandleWebhook_Success(t *testing.T) {
 
 func TestHandleWebhook_GeneratesRequestID(t *testing.T) {
 	called := make(chan struct{}, 1)
-	h := New(processorStub{
+	h, err := New(processorStub{
 		process: func(ctx context.Context, body []byte, signature string, remoteAddr string) error {
 			called <- struct{}{}
 			id, ok := requestid.FromContext(ctx)
@@ -111,9 +131,8 @@ func TestHandleWebhook_GeneratesRequestID(t *testing.T) {
 			assert.Empty(t, signature)
 			return nil
 		},
-	}, testLogger{}, 1024, 1, make(chan struct{}), func(requestID string) context.Context {
-		return requestid.With(context.Background(), requestID)
-	}, time.Second)
+	}, testLogger{}, 1024, 1, time.Second)
+	require.NoError(t, err)
 
 	req := httptest.NewRequest(http.MethodPost, "/webhook", strings.NewReader(`{}`))
 	rec := httptest.NewRecorder()
@@ -133,9 +152,8 @@ func TestHandleWebhook_GeneratesRequestID(t *testing.T) {
 }
 
 func TestHandleWebhook_RequestTooLarge(t *testing.T) {
-	h := New(processorStub{}, testLogger{}, 4, 1, make(chan struct{}), func(requestID string) context.Context {
-		return requestid.With(context.Background(), requestID)
-	}, time.Second)
+	h, err := New(processorStub{}, testLogger{}, 4, 1, time.Second)
+	require.NoError(t, err)
 
 	req := httptest.NewRequest(http.MethodPost, "/webhook", strings.NewReader(`{"toolarge":true}`))
 	rec := httptest.NewRecorder()
@@ -146,9 +164,8 @@ func TestHandleWebhook_RequestTooLarge(t *testing.T) {
 }
 
 func TestHandleWebhook_ReadError(t *testing.T) {
-	h := New(processorStub{}, testLogger{}, 1024, 1, make(chan struct{}), func(requestID string) context.Context {
-		return requestid.With(context.Background(), requestID)
-	}, time.Second)
+	h, err := New(processorStub{}, testLogger{}, 1024, 1, time.Second)
+	require.NoError(t, err)
 
 	req := httptest.NewRequest(http.MethodPost, "/webhook", http.NoBody)
 	req.Body = io.NopCloser(errReader{})
@@ -161,14 +178,13 @@ func TestHandleWebhook_ReadError(t *testing.T) {
 
 func TestHandleWebhook_UsesStatusFromProcessorError(t *testing.T) {
 	called := make(chan struct{}, 1)
-	h := New(processorStub{
+	h, err := New(processorStub{
 		process: func(ctx context.Context, body []byte, signature string, remoteAddr string) error {
 			called <- struct{}{}
 			return errors.New("invalid signature")
 		},
-	}, testLogger{}, 1024, 1, make(chan struct{}), func(requestID string) context.Context {
-		return requestid.With(context.Background(), requestID)
-	}, time.Second)
+	}, testLogger{}, 1024, 1, time.Second)
+	require.NoError(t, err)
 
 	req := httptest.NewRequest(http.MethodPost, "/webhook", strings.NewReader(`{}`))
 	rec := httptest.NewRecorder()
@@ -188,14 +204,13 @@ func TestHandleWebhook_UsesStatusFromProcessorError(t *testing.T) {
 
 func TestHandleWebhook_UsesInternalServerErrorFromGenericProcessorError(t *testing.T) {
 	called := make(chan struct{}, 1)
-	h := New(processorStub{
+	h, err := New(processorStub{
 		process: func(ctx context.Context, body []byte, signature string, remoteAddr string) error {
 			called <- struct{}{}
 			return errors.New("boom")
 		},
-	}, testLogger{}, 1024, 1, make(chan struct{}), func(requestID string) context.Context {
-		return requestid.With(context.Background(), requestID)
-	}, time.Second)
+	}, testLogger{}, 1024, 1, time.Second)
+	require.NoError(t, err)
 
 	req := httptest.NewRequest(http.MethodPost, "/webhook", strings.NewReader(`{}`))
 	rec := httptest.NewRecorder()
@@ -256,6 +271,42 @@ func TestShutdown_WaitsForBackgroundWork(t *testing.T) {
 		require.NoError(t, err)
 	case <-time.After(time.Second):
 		t.Fatal("shutdown did not wait for background work")
+	}
+}
+
+func TestShutdown_CancelsBackgroundWork(t *testing.T) {
+	started := make(chan struct{}, 1)
+	canceled := make(chan struct{}, 1)
+	h := newTestHandler(processorStub{
+		process: func(ctx context.Context, body []byte, signature string, remoteAddr string) error {
+			started <- struct{}{}
+			<-ctx.Done()
+			canceled <- struct{}{}
+			return ctx.Err()
+		},
+	})
+
+	req := httptest.NewRequest(http.MethodPost, "/webhook", strings.NewReader(`{}`))
+	rec := httptest.NewRecorder()
+	h.HandleWebhook(rec, req)
+
+	require.Eventually(t, func() bool {
+		select {
+		case <-started:
+			return true
+		default:
+			return false
+		}
+	}, time.Second, 10*time.Millisecond)
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	require.NoError(t, h.Shutdown(shutdownCtx))
+
+	select {
+	case <-canceled:
+	case <-time.After(time.Second):
+		t.Fatal("shutdown did not cancel background work")
 	}
 }
 

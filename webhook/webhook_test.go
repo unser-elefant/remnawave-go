@@ -24,7 +24,11 @@ type processorStub struct{}
 func (processorStub) Process(context.Context, []byte, string, string) error { return nil }
 
 func newTestHandler() *handler.Handler {
-	return handler.New(processorStub{}, testLogger{}, 1024, 1, make(chan struct{}), nil, time.Second)
+	h, err := handler.New(processorStub{}, testLogger{}, 1024, 1, time.Second)
+	if err != nil {
+		panic(err)
+	}
+	return h
 }
 
 func TestRun_HealthAndShutdown(t *testing.T) {
@@ -60,5 +64,13 @@ func TestRun_ReturnsErrorOnInvalidAddress(t *testing.T) {
 	err := Run(context.Background(), cfg, testLogger{}, newTestHandler())
 
 	require.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid port")
+	assert.EqualError(t, err, "invalid server port: -1")
+}
+
+func TestRun_RejectsInvalidConfig(t *testing.T) {
+	config := &Config{ShutdownTimeout: -time.Second}
+
+	err := Run(context.Background(), config, testLogger{}, newTestHandler())
+
+	assert.EqualError(t, err, "shutdown timeout must be positive: -1s")
 }

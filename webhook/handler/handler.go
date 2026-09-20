@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -24,15 +25,16 @@ type logger interface {
 }
 
 type Handler struct {
-	p              processor
-	l              logger
-	maxBodySize    int64
-	stopCh         <-chan struct{}
-	newBaseCtx     func(string) context.Context
-	processTimeout time.Duration
-	sem            chan struct{}
-	wg             sync.WaitGroup
-	closing        atomic.Bool
+	p               processor
+	l               logger
+	maxBodySize     int64
+	processTimeout  time.Duration
+	sem             chan struct{}
+	stateMu         sync.Mutex
+	wg              sync.WaitGroup
+	closing         atomic.Bool
+	lifecycleCtx    context.Context
+	lifecycleCancel context.CancelFunc
 }
 
 func New(
@@ -40,25 +42,29 @@ func New(
 	l logger,
 	maxBodySize int64,
 	maxWorkers int,
-	stopCh <-chan struct{},
-	newBaseCtx func(string) context.Context,
 	processTimeout time.Duration,
-) *Handler {
-	if newBaseCtx == nil {
-		newBaseCtx = func(requestID string) context.Context {
-			return requestid.With(context.Background(), requestID)
-		}
+) (*Handler, error) {
+	if maxBodySize <= 0 {
+		return nil, fmt.Errorf("max body size must be positive: %d", maxBodySize)
+	}
+	if maxWorkers <= 0 {
+		return nil, fmt.Errorf("max workers must be positive: %d", maxWorkers)
+	}
+	if processTimeout <= 0 {
+		return nil, fmt.Errorf("process timeout must be positive: %s", processTimeout)
 	}
 
+	lifecycleCtx, lifecycleCancel := context.WithCancel(context.Background())
+
 	return &Handler{
-		p:              p,
-		l:              l,
-		maxBodySize:    maxBodySize,
-		stopCh:         stopCh,
-		newBaseCtx:     newBaseCtx,
-		processTimeout: processTimeout,
-		sem:            make(chan struct{}, maxWorkers),
-	}
+		p:               p,
+		l:               l,
+		maxBodySize:     maxBodySize,
+		processTimeout:  processTimeout,
+		sem:             make(chan struct{}, maxWorkers),
+		lifecycleCtx:    lifecycleCtx,
+		lifecycleCancel: lifecycleCancel,
+	}, nil
 }
 
 func (h *Handler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
@@ -93,16 +99,19 @@ func (h *Handler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 
 	select {
 	case h.sem <- struct{}{}:
+		h.stateMu.Lock()
 		if h.closing.Load() {
+			h.stateMu.Unlock()
 			<-h.sem
 			log.Warn("Webhook handler is shutting down")
 			http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
 			return
 		}
 		h.wg.Add(1)
-		go h.processWebhook(body, sign, r.RemoteAddr, requestID, h.newBaseCtx(requestID))
+		h.stateMu.Unlock()
+		go h.processWebhook(body, sign, r.RemoteAddr, requestID, context.WithoutCancel(ctx))
 
-	case <-h.stopCh:
+	case <-h.lifecycleCtx.Done():
 		log.Warn("Webhook handler is shutting down")
 		http.Error(w, http.StatusText(http.StatusServiceUnavailable), http.StatusServiceUnavailable)
 		return
@@ -118,7 +127,10 @@ func (h *Handler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Shutdown(ctx context.Context) error {
+	h.stateMu.Lock()
 	h.closing.Store(true)
+	h.lifecycleCancel()
+	h.stateMu.Unlock()
 
 	done := make(chan struct{})
 
@@ -147,9 +159,14 @@ func (h *Handler) processWebhook(body []byte, sign, remoteAddr, requestID string
 		}
 	}()
 
-	ctx := requestid.With(baseCtx, requestID)
+	ctx, stop := context.WithCancel(baseCtx)
+
+	shutdownStop := context.AfterFunc(h.lifecycleCtx, stop)
+	defer shutdownStop()
+
 	ctx, cancel := context.WithTimeout(ctx, h.processTimeout)
 	defer cancel()
+
 	log := h.l.WithContext(ctx)
 
 	if err := h.p.Process(ctx, body, sign, remoteAddr); err != nil {

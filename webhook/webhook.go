@@ -2,6 +2,7 @@ package webhook
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -24,6 +25,10 @@ type Config struct {
 }
 
 func Run(ctx context.Context, cfg *Config, l logger, h *handler.Handler) error {
+	if err := validateConfig(cfg); err != nil {
+		return err
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/webhook", h.HandleWebhook)
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -61,13 +66,43 @@ func Run(ctx context.Context, cfg *Config, l logger, h *handler.Handler) error {
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), cfg.ShutdownTimeout)
 	defer cancel()
 
-	if err := server.Shutdown(shutdownCtx); err != nil {
-		return fmt.Errorf("webhook server shutdown failed: %w", err)
+	shutdownErrCh := make(chan error, 2)
+	go func() {
+		shutdownErrCh <- server.Shutdown(shutdownCtx)
+	}()
+	go func() {
+		shutdownErrCh <- h.Shutdown(shutdownCtx)
+	}()
+
+	var shutdownErrs []error
+	for range 2 {
+		if err := <-shutdownErrCh; err != nil {
+			shutdownErrs = append(shutdownErrs, err)
+		}
 	}
-	if err := h.Shutdown(shutdownCtx); err != nil {
-		return fmt.Errorf("webhook handler shutdown failed: %w", err)
+	if len(shutdownErrs) > 0 {
+		return fmt.Errorf("webhook shutdown failed: %w", errors.Join(shutdownErrs...))
 	}
 
 	l.Info("Webhook server stopped")
+	return nil
+}
+
+func validateConfig(cfg *Config) error {
+	if cfg == nil {
+		return errors.New("webhook config is nil")
+	}
+	if cfg.ServerPort < 0 || cfg.ServerPort > 65535 {
+		return fmt.Errorf("invalid server port: %d", cfg.ServerPort)
+	}
+	if cfg.ShutdownTimeout <= 0 {
+		return fmt.Errorf("shutdown timeout must be positive: %s", cfg.ShutdownTimeout)
+	}
+	if cfg.ReadTimeout < 0 {
+		return fmt.Errorf("read timeout cannot be negative: %s", cfg.ReadTimeout)
+	}
+	if cfg.WriteTimeout < 0 {
+		return fmt.Errorf("write timeout cannot be negative: %s", cfg.WriteTimeout)
+	}
 	return nil
 }
