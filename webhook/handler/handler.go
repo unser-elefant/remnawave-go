@@ -28,8 +28,8 @@ type Handler struct {
 	p               processor
 	l               logger
 	maxBodySize     int64
-	processTimeout  time.Duration
 	sem             chan struct{}
+	processTimeout  time.Duration
 	stateMu         sync.Mutex
 	wg              sync.WaitGroup
 	closing         atomic.Bool
@@ -60,8 +60,8 @@ func New(
 		p:               p,
 		l:               l,
 		maxBodySize:     maxBodySize,
-		processTimeout:  processTimeout,
 		sem:             make(chan struct{}, maxWorkers),
+		processTimeout:  processTimeout,
 		lifecycleCtx:    lifecycleCtx,
 		lifecycleCancel: lifecycleCancel,
 	}, nil

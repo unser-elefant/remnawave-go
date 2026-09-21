@@ -12,16 +12,16 @@ import (
 	"github.com/unser-elefant/remnawave-go/domain"
 	"github.com/unser-elefant/remnawave-go/internal/api/model"
 	realmapper "github.com/unser-elefant/remnawave-go/internal/mapper"
-	mocks_deviceapi "github.com/unser-elefant/remnawave-go/internal/mocks/deviceAPI"
+	mock_deviceapi "github.com/unser-elefant/remnawave-go/internal/mock/deviceAPI"
 )
 
-func newTestDeviceService(api *mocks_deviceapi.MockdeviceAPI) *DeviceService {
+func newTestDeviceService(api *mock_deviceapi.MockdeviceAPI) *DeviceService {
 	return NewDeviceService(api, slog.Default())
 }
 
 func TestDeviceService_GetDevices(t *testing.T) {
 	t.Run("successful get devices", func(t *testing.T) {
-		mockAPI := mocks_deviceapi.NewMockdeviceAPI(t)
+		mockAPI := mock_deviceapi.NewMockdeviceAPI(t)
 		service := newTestDeviceService(mockAPI)
 
 		platform := "Windows"
@@ -52,7 +52,7 @@ func TestDeviceService_GetDevices(t *testing.T) {
 	})
 
 	t.Run("api error", func(t *testing.T) {
-		mockAPI := mocks_deviceapi.NewMockdeviceAPI(t)
+		mockAPI := mock_deviceapi.NewMockdeviceAPI(t)
 		service := newTestDeviceService(mockAPI)
 
 		ctx := context.Background()
@@ -66,7 +66,7 @@ func TestDeviceService_GetDevices(t *testing.T) {
 	})
 
 	t.Run("empty devices list", func(t *testing.T) {
-		mockAPI := mocks_deviceapi.NewMockdeviceAPI(t)
+		mockAPI := mock_deviceapi.NewMockdeviceAPI(t)
 		service := newTestDeviceService(mockAPI)
 
 		mockResponse := &model.DevicesResponse{
@@ -85,7 +85,7 @@ func TestDeviceService_GetDevices(t *testing.T) {
 
 func TestDeviceService_DeleteAllDevices(t *testing.T) {
 	t.Run("successful delete", func(t *testing.T) {
-		mockAPI := mocks_deviceapi.NewMockdeviceAPI(t)
+		mockAPI := mock_deviceapi.NewMockdeviceAPI(t)
 		service := newTestDeviceService(mockAPI)
 
 		ctx := context.Background()
@@ -97,7 +97,7 @@ func TestDeviceService_DeleteAllDevices(t *testing.T) {
 	})
 
 	t.Run("delete error", func(t *testing.T) {
-		mockAPI := mocks_deviceapi.NewMockdeviceAPI(t)
+		mockAPI := mock_deviceapi.NewMockdeviceAPI(t)
 		service := newTestDeviceService(mockAPI)
 
 		ctx := context.Background()
@@ -112,7 +112,7 @@ func TestDeviceService_DeleteAllDevices(t *testing.T) {
 
 func TestDeviceService_GetDevicesCount(t *testing.T) {
 	t.Run("successful get count", func(t *testing.T) {
-		mockAPI := mocks_deviceapi.NewMockdeviceAPI(t)
+		mockAPI := mock_deviceapi.NewMockdeviceAPI(t)
 		service := newTestDeviceService(mockAPI)
 
 		mockResponse := &model.DevicesResponse{
@@ -129,7 +129,7 @@ func TestDeviceService_GetDevicesCount(t *testing.T) {
 	})
 
 	t.Run("count error", func(t *testing.T) {
-		mockAPI := mocks_deviceapi.NewMockdeviceAPI(t)
+		mockAPI := mock_deviceapi.NewMockdeviceAPI(t)
 		service := newTestDeviceService(mockAPI)
 
 		ctx := context.Background()
@@ -143,7 +143,7 @@ func TestDeviceService_GetDevicesCount(t *testing.T) {
 	})
 
 	t.Run("zero count", func(t *testing.T) {
-		mockAPI := mocks_deviceapi.NewMockdeviceAPI(t)
+		mockAPI := mock_deviceapi.NewMockdeviceAPI(t)
 		service := newTestDeviceService(mockAPI)
 
 		mockResponse := &model.DevicesResponse{
@@ -162,7 +162,7 @@ func TestDeviceService_GetDevicesCount(t *testing.T) {
 
 func TestDeviceService_Integration_Mapping(t *testing.T) {
 	t.Run("correct mapping from API to domain", func(t *testing.T) {
-		mockAPI := mocks_deviceapi.NewMockdeviceAPI(t)
+		mockAPI := mock_deviceapi.NewMockdeviceAPI(t)
 		service := newTestDeviceService(mockAPI)
 
 		platform := "Android"

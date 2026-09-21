@@ -97,8 +97,8 @@ func TestClientUsersGetUserIntegration(t *testing.T) {
 	require.Equal(t, uint64(42), user.ID)
 	require.Equal(t, "alice", user.Username)
 	require.Equal(t, "ACTIVE", string(user.Status))
-	require.Equal(t, int64(536870912), user.TrafficUsed)
-	require.Equal(t, int64(1073741824), user.TrafficLimit)
+	require.Equal(t, 536870912.0, user.TrafficUsed)
+	require.Equal(t, 1073741824.0, user.TrafficLimit)
 }
 
 func TestClientUsersGetUserExposesAPIError(t *testing.T) {

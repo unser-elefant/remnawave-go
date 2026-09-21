@@ -36,8 +36,8 @@ type User struct {
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
 
-	TrafficUsed      int64
-	TrafficLimit     int64
+	TrafficUsed      float64
+	TrafficLimit     float64
 	TrafficStrategy  TrafficLimitStrategy
 	LastTrafficReset *time.Time
 

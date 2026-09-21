@@ -18,7 +18,7 @@ func ToDomainUser(m *model.User) *domain.User {
 		SubscriptionEnd:       m.ExpireAt,
 		CreatedAt:             m.CreatedAt,
 		UpdatedAt:             m.UpdatedAt,
-		TrafficUsed:           int64(m.UserTraffic.UsedTrafficBytes),
+		TrafficUsed:           m.UserTraffic.UsedTrafficBytes,
 		TrafficLimit:          m.TrafficLimitBytes,
 		TrafficStrategy:       domain.TrafficLimitStrategy(m.TrafficLimitStrategy),
 		LastTrafficReset:      m.LastTrafficResetAt,

@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/unser-elefant/remnawave-go/domain"
-	apiClient "github.com/unser-elefant/remnawave-go/internal/api"
-	lowlevel "github.com/unser-elefant/remnawave-go/internal/httpclient"
-	servicepkg "github.com/unser-elefant/remnawave-go/internal/service"
+	"github.com/unser-elefant/remnawave-go/internal/api"
+	"github.com/unser-elefant/remnawave-go/internal/httpclient"
+	"github.com/unser-elefant/remnawave-go/internal/service"
 )
 
 type Logger interface {
@@ -25,13 +25,13 @@ type Logger interface {
 
 type RegisterUserRequest = domain.RegisterUserRequest
 
-type APIError = lowlevel.APIError
+type APIError = httpclient.APIError
 
 var (
-	ErrResourceNotFound = lowlevel.ErrResourceNotFound
-	ErrBadRequest       = lowlevel.ErrBadRequest
-	ErrUnauthorized     = lowlevel.ErrUnauthorized
-	ErrAPIError         = lowlevel.ErrAPIError
+	ErrResourceNotFound = httpclient.ErrResourceNotFound
+	ErrBadRequest       = httpclient.ErrBadRequest
+	ErrUnauthorized     = httpclient.ErrUnauthorized
+	ErrAPIError         = httpclient.ErrAPIError
 )
 
 type Config struct {
@@ -77,8 +77,8 @@ type DeviceService interface {
 }
 
 var (
-	_ UserService   = (*servicepkg.UserService)(nil)
-	_ DeviceService = (*servicepkg.DeviceService)(nil)
+	_ UserService   = (*service.UserService)(nil)
+	_ DeviceService = (*service.DeviceService)(nil)
 )
 
 type Client struct {
@@ -101,7 +101,7 @@ func New(cfg Config) (*Client, error) {
 		l = slog.Default()
 	}
 
-	httpClient := lowlevel.New(l, &lowlevel.Config{
+	httpClient := httpclient.New(l, &httpclient.Config{
 		APIURL:             apiURL,
 		APIKey:             cfg.APIKey,
 		HTTPClient:         cfg.HTTPClient,
@@ -110,12 +110,12 @@ func New(cfg Config) (*Client, error) {
 		Timeout:            cfg.Timeout,
 	})
 
-	userAPI := apiClient.NewUserAPI(apiURL.String(), httpClient)
-	deviceAPI := apiClient.NewDeviceAPI(apiURL.String(), httpClient)
+	userAPI := api.NewUserAPI(apiURL.String(), httpClient)
+	deviceAPI := api.NewDeviceAPI(apiURL.String(), httpClient)
 
 	return &Client{
-		users:   servicepkg.NewUserService(userAPI, l),
-		devices: servicepkg.NewDeviceService(deviceAPI, l),
+		users:   service.NewUserService(userAPI, l),
+		devices: service.NewDeviceService(deviceAPI, l),
 	}, nil
 }
 

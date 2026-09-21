@@ -36,7 +36,7 @@ func TestUser_DaysLeft(t *testing.T) {
 func TestUser_HasTrafficLimit(t *testing.T) {
 	tests := []struct {
 		name         string
-		trafficLimit int64
+		trafficLimit float64
 		expected     bool
 	}{
 		{name: "has limit", trafficLimit: 10 * 1024 * 1024 * 1024, expected: true},
@@ -55,8 +55,8 @@ func TestUser_HasTrafficLimit(t *testing.T) {
 func TestUser_TrafficUsagePercent(t *testing.T) {
 	tests := []struct {
 		name         string
-		trafficUsed  int64
-		trafficLimit int64
+		trafficUsed  float64
+		trafficLimit float64
 		expected     float64
 	}{
 		{name: "50% used", trafficUsed: 5 * 1024 * 1024 * 1024, trafficLimit: 10 * 1024 * 1024 * 1024, expected: 50.0},
@@ -199,11 +199,11 @@ func TestUser_ShouldShowTimeInHours(t *testing.T) {
 func TestUser_GetTrafficUsedGB(t *testing.T) {
 	tests := []struct {
 		name        string
-		trafficUsed int64
+		trafficUsed float64
 		expected    float64
 	}{
 		{name: "1 GB", trafficUsed: 1 * 1024 * 1024 * 1024, expected: 1.0},
-		{name: "5.5 GB", trafficUsed: int64(5.5 * 1024 * 1024 * 1024), expected: 5.5},
+		{name: "5.5 GB", trafficUsed: 5.5 * 1024 * 1024 * 1024, expected: 5.5},
 		{name: "0 GB", trafficUsed: 0, expected: 0.0},
 	}
 
@@ -218,7 +218,7 @@ func TestUser_GetTrafficUsedGB(t *testing.T) {
 func TestUser_GetTrafficLimitGB(t *testing.T) {
 	tests := []struct {
 		name         string
-		trafficLimit int64
+		trafficLimit float64
 		expected     float64
 	}{
 		{name: "10 GB", trafficLimit: 10 * 1024 * 1024 * 1024, expected: 10.0},

@@ -15,10 +15,10 @@ import (
 	"github.com/unser-elefant/remnawave-go/domain"
 	"github.com/unser-elefant/remnawave-go/internal/api/model"
 	realmapper "github.com/unser-elefant/remnawave-go/internal/mapper"
-	mocks_userapi "github.com/unser-elefant/remnawave-go/internal/mocks/userAPI"
+	mock_userapi "github.com/unser-elefant/remnawave-go/internal/mock/userAPI"
 )
 
-func newTestUserService(api *mocks_userapi.MockuserAPI) *UserService {
+func newTestUserService(api *mock_userapi.MockuserAPI) *UserService {
 	return NewUserService(api, slog.Default())
 }
 
@@ -30,7 +30,7 @@ func newRegisterRequest(telegramID int64, username string) *domain.RegisterUserR
 	}
 }
 
-func newTestUser(username string, telegramID *int64, usedTraffic, trafficLimit int64) model.User {
+func newTestUser(username string, telegramID *int64, usedTraffic, trafficLimit float64) model.User {
 	now := time.Now()
 	return model.User{
 		ID:                   1,
@@ -57,7 +57,7 @@ func newTestUser(username string, telegramID *int64, usedTraffic, trafficLimit i
 
 func TestUserService_GetUserByTelegramID(t *testing.T) {
 	t.Run("successful get user", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		telegramID := int64(12345)
@@ -77,7 +77,7 @@ func TestUserService_GetUserByTelegramID(t *testing.T) {
 	})
 
 	t.Run("user not found", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
@@ -90,7 +90,7 @@ func TestUserService_GetUserByTelegramID(t *testing.T) {
 	})
 
 	t.Run("maps client ErrResourceNotFound to domain ErrUserNotFound", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
@@ -103,7 +103,7 @@ func TestUserService_GetUserByTelegramID(t *testing.T) {
 	})
 
 	t.Run("empty response", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
@@ -116,7 +116,7 @@ func TestUserService_GetUserByTelegramID(t *testing.T) {
 	})
 
 	t.Run("api error", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
@@ -133,7 +133,7 @@ func TestUserService_GetUserByTelegramID(t *testing.T) {
 
 func TestUserService_IsUserExists(t *testing.T) {
 	t.Run("user exists", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		telegramID := int64(12345)
@@ -149,7 +149,7 @@ func TestUserService_IsUserExists(t *testing.T) {
 	})
 
 	t.Run("user does not exist", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
@@ -162,7 +162,7 @@ func TestUserService_IsUserExists(t *testing.T) {
 	})
 
 	t.Run("api error", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
@@ -178,7 +178,7 @@ func TestUserService_IsUserExists(t *testing.T) {
 
 func TestUserService_Register(t *testing.T) {
 	t.Run("successful registration", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
@@ -193,7 +193,7 @@ func TestUserService_Register(t *testing.T) {
 	})
 
 	t.Run("user already exists", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
@@ -210,7 +210,7 @@ func TestUserService_Register(t *testing.T) {
 	})
 
 	t.Run("registration api error", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
@@ -226,7 +226,7 @@ func TestUserService_Register(t *testing.T) {
 	})
 
 	t.Run("check existence error", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
@@ -243,7 +243,7 @@ func TestUserService_Register(t *testing.T) {
 
 func TestUserService_RevokeSubscription(t *testing.T) {
 	t.Run("successful revoke subscription", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
@@ -258,7 +258,7 @@ func TestUserService_RevokeSubscription(t *testing.T) {
 	})
 
 	t.Run("api error on revoke", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
@@ -273,7 +273,7 @@ func TestUserService_RevokeSubscription(t *testing.T) {
 	})
 
 	t.Run("revoke with null id", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		err := service.RevokeSubscription(context.Background(), 0)
@@ -283,7 +283,7 @@ func TestUserService_RevokeSubscription(t *testing.T) {
 	})
 
 	t.Run("revoke non-existent user", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
@@ -300,7 +300,7 @@ func TestUserService_RevokeSubscription(t *testing.T) {
 
 func TestUserService_Integration_FullFlow(t *testing.T) {
 	t.Run("register and retrieve user", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
@@ -329,7 +329,7 @@ func TestUserService_Integration_FullFlow(t *testing.T) {
 	})
 
 	t.Run("register get user and revoke subscription", func(t *testing.T) {
-		mockAPI := mocks_userapi.NewMockuserAPI(t)
+		mockAPI := mock_userapi.NewMockuserAPI(t)
 		service := newTestUserService(mockAPI)
 
 		ctx := context.Background()
