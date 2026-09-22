@@ -9,21 +9,21 @@ import (
 	"github.com/unser-elefant/remnawave-go/webhook/typed"
 )
 
-func ParseUserWebhook(p *payload.RemnawaveWebhook) (*domain.User, error) {
+func ParseUserWebhook(p *payload.RemnawaveWebhook) (domain.User, error) {
 	dto, err := typed.ParseWebhookData[model.RemnawaveWebhookUserEventsData](p)
 	if err != nil {
-		return nil, fmt.Errorf("parse user data: %w", err)
+		return domain.User{}, fmt.Errorf("parse user data: %w", err)
 	}
 
 	return toDomainUser(&dto), nil
 }
 
-func toDomainUser(m *model.RemnawaveWebhookUserEventsData) *domain.User {
+func toDomainUser(m *model.RemnawaveWebhookUserEventsData) domain.User {
 	if m == nil {
-		return nil
+		return domain.User{}
 	}
 
-	d := &domain.User{
+	d := domain.User{
 		ID:                    m.ID,
 		ShortUUID:             m.ShortUUID,
 		Username:              m.Username,

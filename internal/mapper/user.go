@@ -5,12 +5,12 @@ import (
 	"github.com/unser-elefant/remnawave-go/internal/api/model"
 )
 
-func ToDomainUser(m *model.User) *domain.User {
+func ToDomainUser(m *model.User) domain.User {
 	if m == nil {
-		return nil
+		return domain.User{}
 	}
 
-	d := &domain.User{
+	d := domain.User{
 		ID:                    m.ID,
 		ShortUUID:             m.ShortUUID,
 		Username:              m.Username,
@@ -51,8 +51,8 @@ func ToDomainUser(m *model.User) *domain.User {
 	return d
 }
 
-func ToDomainUsers(models []model.User) []*domain.User {
-	result := make([]*domain.User, 0, len(models))
+func ToDomainUsers(models []model.User) []domain.User {
+	result := make([]domain.User, 0, len(models))
 	for i := range models {
 		result = append(result, ToDomainUser(&models[i]))
 	}

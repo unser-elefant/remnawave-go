@@ -5,12 +5,12 @@ import (
 	"github.com/unser-elefant/remnawave-go/internal/api/model"
 )
 
-func ToDomainDevice(m *model.Device) *domain.Device {
+func ToDomainDevice(m *model.Device) domain.Device {
 	if m == nil {
-		return nil
+		return domain.Device{}
 	}
 
-	d := &domain.Device{
+	d := domain.Device{
 		HWID:      m.HWID,
 		UserID:    m.UserID,
 		CreatedAt: m.CreatedAt,
@@ -40,8 +40,8 @@ func ToDomainDevice(m *model.Device) *domain.Device {
 	return d
 }
 
-func ToDomainDevices(models []model.Device) []*domain.Device {
-	result := make([]*domain.Device, 0, len(models))
+func ToDomainDevices(models []model.Device) []domain.Device {
+	result := make([]domain.Device, 0, len(models))
 	for i := range models {
 		result = append(result, ToDomainDevice(&models[i]))
 	}

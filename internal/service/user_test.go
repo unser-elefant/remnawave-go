@@ -73,7 +73,7 @@ func TestUserService_GetUserByTelegramID(t *testing.T) {
 		user, err := service.GetUserByTelegramID(ctx, telegramID)
 
 		require.NoError(t, err)
-		assert.Equal(t, mappedUser, user)
+		assert.Equal(t, mappedUser, *user)
 	})
 
 	t.Run("user not found", func(t *testing.T) {
@@ -325,7 +325,7 @@ func TestUserService_Integration_FullFlow(t *testing.T) {
 
 		user, err := service.GetUserByTelegramID(ctx, telegramID)
 		require.NoError(t, err)
-		assert.Equal(t, mappedUser, user)
+		assert.Equal(t, mappedUser, *user)
 	})
 
 	t.Run("register get user and revoke subscription", func(t *testing.T) {

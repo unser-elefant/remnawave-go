@@ -74,7 +74,7 @@ func (u *UserService) GetUserByTelegramID(ctx context.Context, telegramID int64)
 		"id", user.ID,
 		"username", user.Username)
 
-	return user, nil
+	return &user, nil
 }
 
 func (u *UserService) Register(ctx context.Context, request *domain.RegisterUserRequest) error {

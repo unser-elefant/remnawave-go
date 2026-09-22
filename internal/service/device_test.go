@@ -35,7 +35,7 @@ func TestDeviceService_GetDevices(t *testing.T) {
 		mockResponse := &model.DevicesResponse{
 			Response: model.DevicesData{Devices: apiDevices, Total: 1},
 		}
-		domainDevices := []*domain.Device{{
+		domainDevices := []domain.Device{{
 			HWID:      "device-1",
 			UserID:    int64(123),
 			Platform:  "Windows",
@@ -235,7 +235,7 @@ func BenchmarkDeviceService_MapperToDomainSlice(b *testing.B) {
 	for b.Loop() {
 		domainDevices := make([]domain.Device, 0, len(apiDevices))
 		for i := range apiDevices {
-			domainDevices = append(domainDevices, *realmapper.ToDomainDevice(&apiDevices[i]))
+			domainDevices = append(domainDevices, realmapper.ToDomainDevice(&apiDevices[i]))
 		}
 	}
 }
@@ -296,7 +296,7 @@ func BenchmarkDeviceService_MultipleDevicesMapping(b *testing.B) {
 		domainDevices := make([]domain.Device, 0, len(apiDevices))
 		for i := range apiDevices {
 			dev := realmapper.ToDomainDevice(&apiDevices[i])
-			domainDevices = append(domainDevices, *dev)
+			domainDevices = append(domainDevices, dev)
 			_ = dev.GetDisplayName()
 			_ = dev.HasUserAgent()
 			_ = dev.GetPlatformInfo()

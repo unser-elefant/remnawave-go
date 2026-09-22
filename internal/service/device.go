@@ -32,7 +32,7 @@ func NewDeviceService(api deviceAPI, l httpclient.Logger) *DeviceService {
 	}
 }
 
-func (d *DeviceService) GetDevices(ctx context.Context, userID uint64) ([]*domain.Device, error) {
+func (d *DeviceService) GetDevices(ctx context.Context, userID uint64) ([]domain.Device, error) {
 	if d == nil || d.api == nil {
 		return nil, errors.New("device service is not initialized")
 	}

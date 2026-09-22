@@ -71,7 +71,7 @@ type UserService interface {
 }
 
 type DeviceService interface {
-	GetDevices(ctx context.Context, userID uint64) ([]*domain.Device, error)
+	GetDevices(ctx context.Context, userID uint64) ([]domain.Device, error)
 	DeleteAllDevices(ctx context.Context, userID uint64) error
 	GetDevicesCount(ctx context.Context, userID uint64) (int, error)
 }
