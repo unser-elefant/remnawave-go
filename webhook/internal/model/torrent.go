@@ -29,7 +29,7 @@ type XrayReport struct {
 
 type Report struct {
 	ActionReport ActionReport `json:"actionReport"`
-	XrayReport   XrayReport   `josn:"xrayReport"`
+	XrayReport   XrayReport   `json:"xrayReport"`
 }
 
 type RemnawaveWebhookTorrentBlockerEventsData struct {

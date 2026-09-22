@@ -74,7 +74,7 @@ func (u *User) TrafficUsagePercent() float64 {
 	if u == nil || !u.HasTrafficLimit() {
 		return 0
 	}
-	return (float64(u.TrafficUsed) / float64(u.TrafficLimit)) * 100
+	return (u.TrafficUsed / u.TrafficLimit) * 100
 }
 
 func (u *User) IsActive() bool {
@@ -129,14 +129,14 @@ func (u *User) GetTrafficUsedGB() float64 {
 	if u == nil {
 		return 0
 	}
-	return float64(u.TrafficUsed) / (1024 * 1024 * 1024)
+	return u.TrafficUsed / (1024 * 1024 * 1024)
 }
 
 func (u *User) GetTrafficLimitGB() float64 {
 	if u == nil {
 		return 0
 	}
-	return float64(u.TrafficLimit) / (1024 * 1024 * 1024)
+	return u.TrafficLimit / (1024 * 1024 * 1024)
 }
 
 func (u *User) HasLastConnection() bool {

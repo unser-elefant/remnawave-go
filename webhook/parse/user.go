@@ -1,11 +1,24 @@
-package mapper
+package parse
 
 import (
+	"fmt"
+
 	"github.com/unser-elefant/remnawave-go/domain"
-	"github.com/unser-elefant/remnawave-go/webhook/model"
+	"github.com/unser-elefant/remnawave-go/webhook/internal/model"
+	"github.com/unser-elefant/remnawave-go/webhook/payload"
+	"github.com/unser-elefant/remnawave-go/webhook/typed"
 )
 
-func ToDomainUser(m *model.RemnawaveWebhookUserEventsData) *domain.User {
+func ParseUserWebhook(p *payload.RemnawaveWebhook) (*domain.User, error) {
+	dto, err := typed.ParseWebhookData[model.RemnawaveWebhookUserEventsData](p)
+	if err != nil {
+		return nil, fmt.Errorf("parse user data: %w", err)
+	}
+
+	return toDomainUser(&dto), nil
+}
+
+func toDomainUser(m *model.RemnawaveWebhookUserEventsData) *domain.User {
 	if m == nil {
 		return nil
 	}
@@ -49,13 +62,4 @@ func ToDomainUser(m *model.RemnawaveWebhookUserEventsData) *domain.User {
 	}
 
 	return d
-}
-
-func ToDomainUsers(models []model.RemnawaveWebhookUserEventsData) []*domain.User {
-	result := make([]*domain.User, 0, len(models))
-	for i := range models {
-		result = append(result, ToDomainUser(&models[i]))
-	}
-
-	return result
 }
