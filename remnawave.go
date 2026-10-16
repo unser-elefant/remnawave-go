@@ -66,6 +66,7 @@ func (c Config) Validate() error {
 type UserService interface {
 	GetUserByTelegramID(ctx context.Context, telegramID int64) (*domain.User, error)
 	Register(ctx context.Context, request *RegisterUserRequest) error
+	Update(ctx context.Context, request *domain.UpdateUserRequest) error
 	IsUserExists(ctx context.Context, telegramID int64) (bool, error)
 	RevokeSubscription(ctx context.Context, id uint64) error
 }
