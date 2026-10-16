@@ -104,6 +104,60 @@ func (_c *MockuserAPI_Create_Call) RunAndReturn(run func(ctx context.Context, re
 	return _c
 }
 
+// Update provides a mock function for the type MockuserAPI
+func (_mock *MockuserAPI) Update(ctx context.Context, req *model.UpdateUserRequest) error {
+	ret := _mock.Called(ctx, req)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Update")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *model.UpdateUserRequest) error); ok {
+		r0 = returnFunc(ctx, req)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockuserAPI_Update_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Update'
+type MockuserAPI_Update_Call struct {
+	*mock.Call
+}
+
+// Update is a helper method to define mock.On call
+//   - ctx context.Context
+//   - req *model.UpdateUserRequest
+func (_e *MockuserAPI_Expecter) Update(ctx any, req any) *MockuserAPI_Update_Call {
+	return &MockuserAPI_Update_Call{Call: _e.mock.On("Update", ctx, req)}
+}
+
+func (_c *MockuserAPI_Update_Call) Run(run func(ctx context.Context, req *model.UpdateUserRequest)) *MockuserAPI_Update_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 *model.UpdateUserRequest
+		if args[1] != nil {
+			arg1 = args[1].(*model.UpdateUserRequest)
+		}
+		run(arg0, arg1)
+	})
+	return _c
+}
+
+func (_c *MockuserAPI_Update_Call) Return(err error) *MockuserAPI_Update_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockuserAPI_Update_Call) RunAndReturn(run func(ctx context.Context, req *model.UpdateUserRequest) error) *MockuserAPI_Update_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // GetStream provides a mock function for the type MockuserAPI
 func (_mock *MockuserAPI) GetStream(ctx context.Context, query model.UserStreamQuery) (*model.UsersResponse, error) {
 	ret := _mock.Called(ctx, query)

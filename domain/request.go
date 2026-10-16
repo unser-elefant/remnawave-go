@@ -30,3 +30,18 @@ func (r RegisterUserRequest) Validate() error {
 
 	return nil
 }
+
+type UpdateUserRequest struct {
+	TelegramID int64
+
+	Status               *string
+	TrafficLimitBytes    *int64
+	TrafficLimitStrategy *string
+	ExpireAt             *string
+	Description          *string
+	Tag                  *string
+	Email                *string
+	HWIDDeviceLimit      *int64
+	ActiveInternalSquads []string
+	ExternalSquadUUID    *string
+}

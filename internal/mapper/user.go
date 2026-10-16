@@ -59,3 +59,20 @@ func ToDomainUsers(models []model.User) []domain.User {
 
 	return result
 }
+
+func UpdateUserRequestToModel(userID uint64, domain *domain.UpdateUserRequest) model.UpdateUserRequest {
+	return model.UpdateUserRequest{
+		ID:                   userID,
+		Status:               domain.Status,
+		TrafficLimitBytes:    domain.TrafficLimitBytes,
+		TrafficLimitStrategy: domain.TrafficLimitStrategy,
+		ExpireAt:             domain.ExpireAt,
+		Description:          domain.Description,
+		Tag:                  domain.Tag,
+		TelegramID:           &domain.TelegramID,
+		Email:                domain.Email,
+		HWIDDeviceLimit:      domain.HWIDDeviceLimit,
+		ActiveInternalSquads: domain.ActiveInternalSquads,
+		ExternalSquadUUID:    domain.ExternalSquadUUID,
+	}
+}

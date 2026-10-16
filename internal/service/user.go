@@ -18,6 +18,7 @@ type userAPI interface {
 	GetStream(ctx context.Context, query model.UserStreamQuery) (*model.UsersResponse, error)
 	Create(ctx context.Context, req *model.CreateUserRequest) error
 	RevokeSubscription(ctx context.Context, id uint64) error
+	Update(ctx context.Context, req *model.UpdateUserRequest) error
 }
 
 type UserService struct {
@@ -118,6 +119,42 @@ func (u *UserService) Register(ctx context.Context, request *domain.RegisterUser
 	u.l.Info("User registered successfully",
 		"telegram_id", request.TelegramID,
 		"username", request.Username)
+
+	return nil
+}
+
+func (u *UserService) Update(ctx context.Context, request *domain.UpdateUserRequest) error {
+	if u == nil || u.api == nil {
+		return errors.New("user service is not initialized")
+	}
+	if request == nil {
+		return errors.New("request is not initialized")
+	}
+	if request.TelegramID == 0 {
+		return errors.New("telegram id is required")
+	}
+	u.l.Info("Attempting to update user",
+		"telegram_id", request.TelegramID)
+
+	user, err := u.GetUserByTelegramID(ctx, request.TelegramID)
+	if err != nil || user == nil {
+		if errors.Is(err, domain.ErrUserNotFound) {
+			return errors.New("user not found")
+		}
+		return fmt.Errorf("error in getting user by telegram id: %w", err)
+	}
+
+	req := mapper.UpdateUserRequestToModel(user.ID, request)
+
+	err = u.api.Update(ctx, &req)
+	if err != nil {
+		u.l.Error("Failed to update user", "telegram_id", request.TelegramID, "error", err)
+		return fmt.Errorf("error update user: %w", err)
+	}
+
+	u.l.Info("User updated successfully",
+		"telegram_id", request.TelegramID,
+		"user_id", req.ID)
 
 	return nil
 }

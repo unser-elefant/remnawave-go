@@ -114,3 +114,21 @@ func NewCreateUserRequest(info *CreateUserInitInfo) *CreateUserRequest {
 
 	return req
 }
+
+type UpdateUserRequest struct {
+	// Required one of them
+	Username string `json:"username,omitempty"`
+	ID       uint64 `json:"id,omitempty"`
+
+	Status               *string  `json:"status,omitempty"`
+	TrafficLimitBytes    *int64   `json:"trafficLimitBytes,omitempty"`
+	TrafficLimitStrategy *string  `json:"trafficLimitStrategy,omitempty"`
+	ExpireAt             *string  `json:"expireAt,omitempty"`
+	Description          *string  `json:"description,omitempty"`
+	Tag                  *string  `json:"tag,omitempty"`
+	TelegramID           *int64   `json:"telegramId,omitempty"`
+	Email                *string  `json:"email,omitempty"`
+	HWIDDeviceLimit      *int64   `json:"hwidDeviceLimit,omitempty"`
+	ActiveInternalSquads []string `json:"activeInternalSquads,omitempty"`
+	ExternalSquadUUID    *string  `json:"externalSquadUuid,omitempty"`
+}

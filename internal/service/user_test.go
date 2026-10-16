@@ -241,6 +241,51 @@ func TestUserService_Register(t *testing.T) {
 	})
 }
 
+func TestUserService_Update(t *testing.T) {
+	t.Run("successful update", func(t *testing.T) {
+		mockAPI := mock_userapi.NewMockuserAPI(t)
+		service := newTestUserService(mockAPI)
+		ctx := context.Background()
+		telegramID := int64(12345)
+		apiUser := newTestUser("existing-user", &telegramID, 0, 0)
+		status := "DISABLED"
+		limit := int64(1024)
+		request := &domain.UpdateUserRequest{
+			TelegramID:        telegramID,
+			Status:            &status,
+			TrafficLimitBytes: &limit,
+		}
+
+		mockAPI.EXPECT().GetStream(ctx, mock.Anything).Return(&model.UsersResponse{
+			Response: model.UsersData{Users: []model.User{apiUser}},
+		}, nil)
+		mockAPI.EXPECT().Update(ctx, mock.MatchedBy(func(req *model.UpdateUserRequest) bool {
+			return req != nil && req.ID == apiUser.ID && req.TelegramID != nil &&
+				*req.TelegramID == telegramID && req.Status != nil && *req.Status == status &&
+				req.TrafficLimitBytes != nil && *req.TrafficLimitBytes == limit
+		})).Return(nil)
+
+		require.NoError(t, service.Update(ctx, request))
+	})
+
+	t.Run("update API error is returned", func(t *testing.T) {
+		mockAPI := mock_userapi.NewMockuserAPI(t)
+		service := newTestUserService(mockAPI)
+		ctx := context.Background()
+		telegramID := int64(12345)
+		apiUser := newTestUser("existing-user", &telegramID, 0, 0)
+		expectedErr := errors.New("api error")
+
+		mockAPI.EXPECT().GetStream(ctx, mock.Anything).Return(&model.UsersResponse{
+			Response: model.UsersData{Users: []model.User{apiUser}},
+		}, nil)
+		mockAPI.EXPECT().Update(ctx, mock.AnythingOfType("*model.UpdateUserRequest")).Return(expectedErr)
+
+		err := service.Update(ctx, &domain.UpdateUserRequest{TelegramID: telegramID})
+		require.ErrorIs(t, err, expectedErr)
+	})
+}
+
 func TestUserService_RevokeSubscription(t *testing.T) {
 	t.Run("successful revoke subscription", func(t *testing.T) {
 		mockAPI := mock_userapi.NewMockuserAPI(t)

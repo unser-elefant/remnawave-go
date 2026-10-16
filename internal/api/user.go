@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/unser-elefant/remnawave-go/internal/api/model"
 )
@@ -87,6 +88,45 @@ func (u *userAPI) Create(ctx context.Context, req *model.CreateUserRequest) erro
 	}
 	if resp == nil || resp.Body == nil {
 		return errors.New("failed to create user: empty response")
+	}
+	defer resp.Body.Close()
+
+	return nil
+}
+
+func (u *userAPI) Update(ctx context.Context, req *model.UpdateUserRequest) error {
+	if u == nil || u.c == nil {
+		return errors.New("user API client is not initialized")
+	}
+	if ctx == nil {
+		return errors.New("context is nil")
+	}
+	if req == nil {
+		return errors.New("update user request is nil")
+	}
+
+	if strings.TrimSpace(req.Username) == "" && req.ID == 0 {
+		return errors.New("username or id is required")
+	}
+
+	url := fmt.Sprintf("%s/api/users", u.baseURL)
+
+	r, err := marshalData(req)
+	if err != nil {
+		return fmt.Errorf("failed to marshal data: %w", err)
+	}
+
+	httpReq, err := http.NewRequestWithContext(ctx, http.MethodPatch, url, r)
+	if err != nil {
+		return fmt.Errorf("failed to create request: %w", err)
+	}
+
+	resp, err := u.c.Do(httpReq)
+	if err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
+	}
+	if resp == nil || resp.Body == nil {
+		return errors.New("failed to update user: empty response")
 	}
 	defer resp.Body.Close()
 
