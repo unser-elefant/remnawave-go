@@ -1,6 +1,8 @@
 package mapper
 
 import (
+	"time"
+
 	"github.com/unser-elefant/remnawave-go/domain"
 	"github.com/unser-elefant/remnawave-go/internal/api/model"
 )
@@ -61,12 +63,8 @@ func ToDomainUsers(models []model.User) []domain.User {
 }
 
 func UpdateUserRequestToModel(userID uint64, domain *domain.UpdateUserRequest) model.UpdateUserRequest {
-	return model.UpdateUserRequest{
+	req := model.UpdateUserRequest{
 		ID:                   userID,
-		Status:               domain.Status,
-		TrafficLimitBytes:    domain.TrafficLimitBytes,
-		TrafficLimitStrategy: domain.TrafficLimitStrategy,
-		ExpireAt:             domain.ExpireAt,
 		Description:          domain.Description,
 		Tag:                  domain.Tag,
 		TelegramID:           &domain.TelegramID,
@@ -75,4 +73,23 @@ func UpdateUserRequestToModel(userID uint64, domain *domain.UpdateUserRequest) m
 		ActiveInternalSquads: domain.ActiveInternalSquads,
 		ExternalSquadUUID:    domain.ExternalSquadUUID,
 	}
+
+	if domain.Status != nil {
+		status := string(*domain.Status)
+		req.Status = &status
+	}
+	if domain.TrafficLimitBytes != nil {
+		trafficLimitBytes := int64(*domain.TrafficLimitBytes)
+		req.TrafficLimitBytes = &trafficLimitBytes
+	}
+	if domain.TrafficLimitStrategy != nil {
+		strategy := string(*domain.TrafficLimitStrategy)
+		req.TrafficLimitStrategy = &strategy
+	}
+	if domain.ExpireAt != nil {
+		expireAt := domain.ExpireAt.Format(time.RFC3339Nano)
+		req.ExpireAt = &expireAt
+	}
+
+	return req
 }

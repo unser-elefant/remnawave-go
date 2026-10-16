@@ -248,12 +248,29 @@ func TestUserService_Update(t *testing.T) {
 		ctx := context.Background()
 		telegramID := int64(12345)
 		apiUser := newTestUser("existing-user", &telegramID, 0, 0)
-		status := "DISABLED"
-		limit := int64(1024)
+		status := domain.UserStatusDisabled
+		limit := float64(1024)
+		strategy := domain.TrafficLimitMonth
+		expireAt := time.Date(2025, 1, 17, 15, 38, 45, 65_000_000, time.UTC)
+		expectedExpireAt := "2025-01-17T15:38:45.065Z"
+		description := "updated description"
+		tag := "UPDATED"
+		email := "alice@example.com"
+		hwidDeviceLimit := int64(3)
+		externalSquadUUID := "external-squad"
+		activeInternalSquads := []string{"squad-a", "squad-b"}
 		request := &domain.UpdateUserRequest{
-			TelegramID:        telegramID,
-			Status:            &status,
-			TrafficLimitBytes: &limit,
+			TelegramID:           telegramID,
+			Status:               &status,
+			TrafficLimitBytes:    &limit,
+			TrafficLimitStrategy: &strategy,
+			ExpireAt:             &expireAt,
+			Description:          &description,
+			Tag:                  &tag,
+			Email:                &email,
+			HWIDDeviceLimit:      &hwidDeviceLimit,
+			ActiveInternalSquads: activeInternalSquads,
+			ExternalSquadUUID:    &externalSquadUUID,
 		}
 
 		mockAPI.EXPECT().GetStream(ctx, mock.Anything).Return(&model.UsersResponse{
@@ -261,8 +278,15 @@ func TestUserService_Update(t *testing.T) {
 		}, nil)
 		mockAPI.EXPECT().Update(ctx, mock.MatchedBy(func(req *model.UpdateUserRequest) bool {
 			return req != nil && req.ID == apiUser.ID && req.TelegramID != nil &&
-				*req.TelegramID == telegramID && req.Status != nil && *req.Status == status &&
-				req.TrafficLimitBytes != nil && *req.TrafficLimitBytes == limit
+				*req.TelegramID == telegramID && req.Status != nil && *req.Status == string(status) &&
+				req.TrafficLimitBytes != nil && *req.TrafficLimitBytes == int64(limit) &&
+				req.TrafficLimitStrategy != nil && *req.TrafficLimitStrategy == string(strategy) &&
+				req.ExpireAt != nil && *req.ExpireAt == expectedExpireAt &&
+				req.Description != nil && *req.Description == description && req.Tag != nil && *req.Tag == tag &&
+				req.Email != nil && *req.Email == email && req.HWIDDeviceLimit != nil &&
+				*req.HWIDDeviceLimit == hwidDeviceLimit &&
+				assert.ObjectsAreEqual(req.ActiveInternalSquads, activeInternalSquads) &&
+				req.ExternalSquadUUID != nil && *req.ExternalSquadUUID == externalSquadUUID
 		})).Return(nil)
 
 		require.NoError(t, service.Update(ctx, request))

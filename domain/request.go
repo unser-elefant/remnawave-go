@@ -34,10 +34,10 @@ func (r RegisterUserRequest) Validate() error {
 type UpdateUserRequest struct {
 	TelegramID int64
 
-	Status               *string
-	TrafficLimitBytes    *int64
-	TrafficLimitStrategy *string
-	ExpireAt             *string
+	Status               *UserStatus
+	TrafficLimitBytes    *float64
+	TrafficLimitStrategy *TrafficLimitStrategy
+	ExpireAt             *time.Time
 	Description          *string
 	Tag                  *string
 	Email                *string
