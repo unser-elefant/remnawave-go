@@ -36,6 +36,7 @@ func ToDomainUser(m *model.User) domain.User {
 
 	if m.HWIDDeviceLimit != nil {
 		d.DeviceLimit = *m.HWIDDeviceLimit
+		d.DeviceLimitSet = true
 	}
 
 	if m.Description != nil {

@@ -555,3 +555,25 @@ func BenchmarkUser_AllMethods(b *testing.B) {
 		user.HasLastConnection()
 	}
 }
+
+func TestUser_EffectiveDeviceLimit(t *testing.T) {
+	tests := []struct {
+		name          string
+		user          *User
+		wantLimit     int64
+		wantUnlimited bool
+	}{
+		{name: "not set uses default", user: &User{}, wantLimit: 5},
+		{name: "explicit limit", user: &User{DeviceLimit: 7, DeviceLimitSet: true}, wantLimit: 7},
+		{name: "zero is unlimited", user: &User{DeviceLimit: 0, DeviceLimitSet: true}, wantUnlimited: true},
+		{name: "nil user uses default", user: nil, wantLimit: 5},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			limit, unlimited := tt.user.EffectiveDeviceLimit(5)
+			assert.Equal(t, tt.wantLimit, limit)
+			assert.Equal(t, tt.wantUnlimited, unlimited)
+		})
+	}
+}

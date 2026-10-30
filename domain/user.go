@@ -41,7 +41,8 @@ type User struct {
 	TrafficStrategy  TrafficLimitStrategy
 	LastTrafficReset *time.Time
 
-	DeviceLimit int64
+	DeviceLimit    int64
+	DeviceLimitSet bool
 
 	SubscriptionURL string
 
@@ -52,6 +53,16 @@ type User struct {
 	OnlineAt              *time.Time
 	FirstConnectedAt      *time.Time
 	LastConnectedNodeUUID *string
+}
+
+func (u *User) EffectiveDeviceLimit(defaultLimit int64) (limit int64, unlimited bool) {
+	if u == nil || !u.DeviceLimitSet {
+		return defaultLimit, false
+	}
+	if u.DeviceLimit == 0 {
+		return 0, true
+	}
+	return u.DeviceLimit, false
 }
 
 func (u *User) DaysLeft() int {

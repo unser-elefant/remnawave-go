@@ -47,6 +47,7 @@ func toDomainUser(m *model.RemnawaveWebhookUserEventsData) domain.User {
 
 	if m.HWIDDeviceLimit != nil {
 		d.DeviceLimit = *m.HWIDDeviceLimit
+		d.DeviceLimitSet = true
 	}
 
 	if m.Description != nil {
