@@ -69,6 +69,7 @@ type UserService interface {
 	Update(ctx context.Context, request *domain.UpdateUserRequest) error
 	IsUserExists(ctx context.Context, telegramID int64) (bool, error)
 	RevokeSubscription(ctx context.Context, id uint64) error
+	RevokePasswords(ctx context.Context, id uint64) error
 }
 
 type DeviceService interface {

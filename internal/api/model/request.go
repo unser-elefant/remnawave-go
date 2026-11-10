@@ -132,3 +132,7 @@ type UpdateUserRequest struct {
 	ActiveInternalSquads []string `json:"activeInternalSquads,omitempty"`
 	ExternalSquadUUID    *string  `json:"externalSquadUuid,omitempty"`
 }
+
+type RevokeUserSubscriptionRequest struct {
+	RevokeOnlyPasswords bool `json:"revokeOnlyPasswords"`
+}

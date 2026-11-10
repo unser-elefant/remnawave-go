@@ -367,6 +367,40 @@ func TestUserService_RevokeSubscription(t *testing.T) {
 	})
 }
 
+func TestUserService_RevokePasswords(t *testing.T) {
+	t.Run("successful revoke passwords", func(t *testing.T) {
+		mockAPI := mock_userapi.NewMockuserAPI(t)
+		service := newTestUserService(mockAPI)
+
+		ctx := context.Background()
+		mockAPI.EXPECT().RevokePasswords(ctx, uint64(123)).Return(nil)
+
+		require.NoError(t, service.RevokePasswords(ctx, 123))
+	})
+
+	t.Run("api error on revoke passwords", func(t *testing.T) {
+		mockAPI := mock_userapi.NewMockuserAPI(t)
+		service := newTestUserService(mockAPI)
+
+		ctx := context.Background()
+		mockAPI.EXPECT().RevokePasswords(ctx, uint64(123)).Return(errors.New("api error"))
+
+		err := service.RevokePasswords(ctx, 123)
+
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "failed to revoke passwords")
+	})
+
+	t.Run("revoke passwords with null id", func(t *testing.T) {
+		mockAPI := mock_userapi.NewMockuserAPI(t)
+		service := newTestUserService(mockAPI)
+
+		err := service.RevokePasswords(context.Background(), 0)
+
+		require.ErrorIs(t, err, domain.ErrInvalidUserID)
+	})
+}
+
 func TestUserService_Integration_FullFlow(t *testing.T) {
 	t.Run("register and retrieve user", func(t *testing.T) {
 		mockAPI := mock_userapi.NewMockuserAPI(t)

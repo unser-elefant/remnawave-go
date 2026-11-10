@@ -18,6 +18,7 @@ type userAPI interface {
 	GetStream(ctx context.Context, query model.UserStreamQuery) (*model.UsersResponse, error)
 	Create(ctx context.Context, req *model.CreateUserRequest) error
 	RevokeSubscription(ctx context.Context, id uint64) error
+	RevokePasswords(ctx context.Context, id uint64) error
 	Update(ctx context.Context, req *model.UpdateUserRequest) error
 }
 
@@ -190,6 +191,26 @@ func (u *UserService) RevokeSubscription(ctx context.Context, id uint64) error {
 	}
 
 	u.l.Info("Subscription revoked successfully", "id", id)
+
+	return nil
+}
+
+func (u *UserService) RevokePasswords(ctx context.Context, id uint64) error {
+	if u == nil || u.api == nil {
+		return errors.New("user service is not initialized")
+	}
+	if id == 0 {
+		return domain.ErrInvalidUserID
+	}
+
+	u.l.Info("Attempting to revoke passwords", "id", id)
+
+	if err := u.api.RevokePasswords(ctx, id); err != nil {
+		u.l.Error("Failed to revoke passwords", "id", id, "error", err)
+		return fmt.Errorf("failed to revoke passwords: %w", err)
+	}
+
+	u.l.Info("Passwords revoked successfully", "id", id)
 
 	return nil
 }

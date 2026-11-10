@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -134,6 +135,14 @@ func (u *userAPI) Update(ctx context.Context, req *model.UpdateUserRequest) erro
 }
 
 func (u *userAPI) RevokeSubscription(ctx context.Context, userID uint64) error {
+	return u.revoke(ctx, userID, nil)
+}
+
+func (u *userAPI) RevokePasswords(ctx context.Context, userID uint64) error {
+	return u.revoke(ctx, userID, &model.RevokeUserSubscriptionRequest{RevokeOnlyPasswords: true})
+}
+
+func (u *userAPI) revoke(ctx context.Context, userID uint64, body *model.RevokeUserSubscriptionRequest) error {
 	if u == nil || u.c == nil {
 		return errors.New("user API client is not initialized")
 	}
@@ -142,7 +151,16 @@ func (u *userAPI) RevokeSubscription(ctx context.Context, userID uint64) error {
 	}
 	url := fmt.Sprintf("%s/api/users/%d/actions/revoke", u.baseURL, userID)
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, nil)
+	var r io.Reader
+	if body != nil {
+		data, err := marshalData(body)
+		if err != nil {
+			return fmt.Errorf("failed to marshal data: %w", err)
+		}
+		r = data
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, url, r)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
