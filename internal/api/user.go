@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/unser-elefant/remnawave-go/internal/api/model"
@@ -52,6 +53,43 @@ func (u *userAPI) GetStream(ctx context.Context, query model.UserStreamQuery) (*
 	var result *model.UsersResponse
 	err = unmarshalData(resp.Body, &result)
 	if err != nil {
+		return nil, fmt.Errorf("failed to decode response body: %w", err)
+	}
+	if result == nil {
+		return nil, errors.New("response data is null")
+	}
+
+	return result, nil
+}
+
+func (u *userAPI) GetByUsername(ctx context.Context, username string) (*model.SingleUserResponse, error) {
+	if u == nil || u.c == nil {
+		return nil, errors.New("user API client is not initialized")
+	}
+	if ctx == nil {
+		return nil, errors.New("context is nil")
+	}
+	if strings.TrimSpace(username) == "" {
+		return nil, errors.New("username is required")
+	}
+	endpoint := fmt.Sprintf("%s/api/users/by-username/%s", u.baseURL, url.PathEscape(username))
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	resp, err := u.c.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	if resp == nil || resp.Body == nil {
+		return nil, errors.New("failed to get user: empty response")
+	}
+	defer resp.Body.Close()
+
+	var result *model.SingleUserResponse
+	if err := unmarshalData(resp.Body, &result); err != nil {
 		return nil, fmt.Errorf("failed to decode response body: %w", err)
 	}
 	if result == nil {

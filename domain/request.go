@@ -10,13 +10,14 @@ type RegisterUserRequest struct {
 	TelegramID           int64
 	Username             string
 	ExpiresAt            time.Time
+	Description          *string
 	HWIDDeviceLimit      *int64
 	ActiveInternalSquads []string
 }
 
 func (r RegisterUserRequest) Validate() error {
-	if r.TelegramID <= 0 {
-		return fmt.Errorf("%w: telegram ID must be positive", ErrInvalidUserRequest)
+	if r.TelegramID < 0 {
+		return fmt.Errorf("%w: telegram ID cannot be negative", ErrInvalidUserRequest)
 	}
 	if strings.TrimSpace(r.Username) == "" {
 		return fmt.Errorf("%w: username is required", ErrInvalidUserRequest)
@@ -32,6 +33,7 @@ func (r RegisterUserRequest) Validate() error {
 }
 
 type UpdateUserRequest struct {
+	UserID     uint64
 	TelegramID int64
 
 	Status               *UserStatus

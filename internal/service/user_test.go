@@ -14,6 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/unser-elefant/remnawave-go/domain"
 	"github.com/unser-elefant/remnawave-go/internal/api/model"
+	"github.com/unser-elefant/remnawave-go/internal/httpclient"
 	realmapper "github.com/unser-elefant/remnawave-go/internal/mapper"
 	mock_userapi "github.com/unser-elefant/remnawave-go/internal/mock/userAPI"
 )
@@ -579,4 +580,61 @@ func BenchmarkUserService_MultipleOperations(b *testing.B) {
 		_ = user.TrafficUsagePercent()
 		_ = user.GetFormattedExpirationDate()
 	}
+}
+
+func TestUserService_GetUserByUsername(t *testing.T) {
+	t.Run("found", func(t *testing.T) {
+		mockAPI := mock_userapi.NewMockuserAPI(t)
+		service := newTestUserService(mockAPI)
+		apiUser := newTestUser("vk_42", nil, 0, 0)
+		mockAPI.EXPECT().GetByUsername(mock.Anything, "vk_42").
+			Return(&model.SingleUserResponse{Response: apiUser}, nil)
+
+		user, err := service.GetUserByUsername(context.Background(), "vk_42")
+
+		require.NoError(t, err)
+		assert.Equal(t, "vk_42", user.Username)
+		assert.Zero(t, user.TelegramID)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		mockAPI := mock_userapi.NewMockuserAPI(t)
+		service := newTestUserService(mockAPI)
+		mockAPI.EXPECT().GetByUsername(mock.Anything, "nobody").
+			Return(nil, fmt.Errorf("api: %w", httpclient.ErrResourceNotFound))
+
+		_, err := service.GetUserByUsername(context.Background(), "nobody")
+
+		require.ErrorIs(t, err, domain.ErrUserNotFound)
+	})
+}
+
+func TestUserService_RegisterWithoutTelegramID(t *testing.T) {
+	mockAPI := mock_userapi.NewMockuserAPI(t)
+	service := newTestUserService(mockAPI)
+	description := `{"vk_id":42}`
+	request := newRegisterRequest(0, "vk_42")
+	request.Description = &description
+
+	mockAPI.EXPECT().Create(mock.Anything, mock.MatchedBy(func(req *model.CreateUserRequest) bool {
+		return req.Username == "vk_42" && req.TelegramID == nil &&
+			req.Description != nil && *req.Description == description
+	})).Return(nil)
+
+	require.NoError(t, service.Register(context.Background(), request))
+}
+
+func TestUserService_UpdateByUserID(t *testing.T) {
+	mockAPI := mock_userapi.NewMockuserAPI(t)
+	service := newTestUserService(mockAPI)
+	description := `{"vk_id":42}`
+
+	mockAPI.EXPECT().Update(mock.Anything, mock.MatchedBy(func(req *model.UpdateUserRequest) bool {
+		return req.ID == 7 && req.TelegramID == nil &&
+			req.Description != nil && *req.Description == description
+	})).Return(nil)
+
+	err := service.Update(context.Background(), &domain.UpdateUserRequest{UserID: 7, Description: &description})
+
+	require.NoError(t, err)
 }

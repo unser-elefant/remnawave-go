@@ -16,6 +16,7 @@ import (
 
 type userAPI interface {
 	GetStream(ctx context.Context, query model.UserStreamQuery) (*model.UsersResponse, error)
+	GetByUsername(ctx context.Context, username string) (*model.SingleUserResponse, error)
 	Create(ctx context.Context, req *model.CreateUserRequest) error
 	RevokeSubscription(ctx context.Context, id uint64) error
 	RevokePasswords(ctx context.Context, id uint64) error
@@ -79,6 +80,28 @@ func (u *UserService) GetUserByTelegramID(ctx context.Context, telegramID int64)
 	return &user, nil
 }
 
+func (u *UserService) GetUserByUsername(ctx context.Context, username string) (*domain.User, error) {
+	if u == nil || u.api == nil {
+		return nil, errors.New("user service is not initialized")
+	}
+
+	resp, err := u.api.GetByUsername(ctx, username)
+	if err != nil {
+		if errors.Is(err, domain.ErrUserNotFound) || errors.Is(err, httpclient.ErrResourceNotFound) {
+			u.l.Debug("User not found", "username", username)
+			return nil, domain.ErrUserNotFound
+		}
+		u.l.Error("Failed to get user from API", "username", username, "error", err)
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	if resp == nil || resp.Response.ID == 0 {
+		return nil, errors.New("failed to get user: empty response")
+	}
+
+	user := mapper.ToDomainUser(&resp.Response)
+	return &user, nil
+}
+
 func (u *UserService) Register(ctx context.Context, request *domain.RegisterUserRequest) error {
 	if u == nil || u.api == nil {
 		return errors.New("user service is not initialized")
@@ -93,15 +116,17 @@ func (u *UserService) Register(ctx context.Context, request *domain.RegisterUser
 		"telegram_id", request.TelegramID,
 		"username", request.Username)
 
-	exists, err := u.IsUserExists(ctx, request.TelegramID)
-	if err != nil {
-		u.l.Error("Failed to check user existence", "telegram_id", request.TelegramID, "error", err)
-		return fmt.Errorf("failed to check user existence: %w", err)
-	}
+	if request.TelegramID != 0 {
+		exists, err := u.IsUserExists(ctx, request.TelegramID)
+		if err != nil {
+			u.l.Error("Failed to check user existence", "telegram_id", request.TelegramID, "error", err)
+			return fmt.Errorf("failed to check user existence: %w", err)
+		}
 
-	if exists {
-		u.l.Warn("User already exists", "telegram_id", request.TelegramID)
-		return domain.ErrUserAlreadyExists
+		if exists {
+			u.l.Warn("User already exists", "telegram_id", request.TelegramID)
+			return domain.ErrUserAlreadyExists
+		}
 	}
 
 	req := model.NewCreateUserRequest(&model.CreateUserInitInfo{
@@ -110,6 +135,7 @@ func (u *UserService) Register(ctx context.Context, request *domain.RegisterUser
 		TelegramID:           request.TelegramID,
 		HWIDDeviceLimit:      request.HWIDDeviceLimit,
 		ActiveInternalSquads: request.ActiveInternalSquads,
+		Description:          request.Description,
 	})
 
 	if err := u.api.Create(ctx, req); err != nil {
@@ -131,23 +157,28 @@ func (u *UserService) Update(ctx context.Context, request *domain.UpdateUserRequ
 	if request == nil {
 		return errors.New("request is not initialized")
 	}
-	if request.TelegramID == 0 {
-		return errors.New("telegram id is required")
+	if request.UserID == 0 && request.TelegramID == 0 {
+		return errors.New("user id or telegram id is required")
 	}
 	u.l.Info("Attempting to update user",
+		"user_id", request.UserID,
 		"telegram_id", request.TelegramID)
 
-	user, err := u.GetUserByTelegramID(ctx, request.TelegramID)
-	if err != nil || user == nil {
-		if errors.Is(err, domain.ErrUserNotFound) {
-			return errors.New("user not found")
+	userID := request.UserID
+	if userID == 0 {
+		user, err := u.GetUserByTelegramID(ctx, request.TelegramID)
+		if err != nil || user == nil {
+			if errors.Is(err, domain.ErrUserNotFound) {
+				return errors.New("user not found")
+			}
+			return fmt.Errorf("error in getting user by telegram id: %w", err)
 		}
-		return fmt.Errorf("error in getting user by telegram id: %w", err)
+		userID = user.ID
 	}
 
-	req := mapper.UpdateUserRequestToModel(user.ID, request)
+	req := mapper.UpdateUserRequestToModel(userID, request)
 
-	err = u.api.Update(ctx, &req)
+	err := u.api.Update(ctx, &req)
 	if err != nil {
 		u.l.Error("Failed to update user", "telegram_id", request.TelegramID, "error", err)
 		return fmt.Errorf("error update user: %w", err)

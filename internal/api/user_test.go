@@ -79,3 +79,22 @@ func TestUserAPI_Revoke(t *testing.T) {
 		})
 	}
 }
+
+func TestUserAPI_GetByUsername(t *testing.T) {
+	client := mock_httpclient.NewMockHTTPClient(t)
+	userAPI := NewUserAPI("https://api.example.com", client)
+
+	client.EXPECT().Do(mock.Anything).RunAndReturn(func(req *http.Request) (*http.Response, error) {
+		require.Equal(t, http.MethodGet, req.Method)
+		require.Equal(t, "https://api.example.com/api/users/by-username/vk_42", req.URL.String())
+		body := `{"response":{"id":7,"username":"vk_42","description":"{\"vk_id\":42}"}}`
+		return &http.Response{StatusCode: http.StatusOK, Body: io.NopCloser(strings.NewReader(body))}, nil
+	})
+
+	resp, err := userAPI.GetByUsername(context.Background(), "vk_42")
+
+	require.NoError(t, err)
+	require.Equal(t, uint64(7), resp.Response.ID)
+	require.Equal(t, "vk_42", resp.Response.Username)
+	require.NotNil(t, resp.Response.Description)
+}

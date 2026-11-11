@@ -68,11 +68,15 @@ func UpdateUserRequestToModel(userID uint64, domain *domain.UpdateUserRequest) m
 		ID:                   userID,
 		Description:          domain.Description,
 		Tag:                  domain.Tag,
-		TelegramID:           &domain.TelegramID,
 		Email:                domain.Email,
 		HWIDDeviceLimit:      domain.HWIDDeviceLimit,
 		ActiveInternalSquads: domain.ActiveInternalSquads,
 		ExternalSquadUUID:    domain.ExternalSquadUUID,
+	}
+
+	if domain.TelegramID != 0 {
+		telegramID := domain.TelegramID
+		req.TelegramID = &telegramID
 	}
 
 	if domain.Status != nil {

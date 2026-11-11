@@ -21,7 +21,7 @@ func TestRegisterUserRequestValidate(t *testing.T) {
 		name    string
 		request RegisterUserRequest
 	}{
-		{name: "missing telegram id", request: RegisterUserRequest{Username: "alice", ExpiresAt: valid.ExpiresAt}},
+		{name: "negative telegram id", request: RegisterUserRequest{TelegramID: -1, Username: "alice", ExpiresAt: valid.ExpiresAt}},
 		{name: "missing username", request: RegisterUserRequest{TelegramID: 12345, ExpiresAt: valid.ExpiresAt}},
 		{name: "missing expiration", request: RegisterUserRequest{TelegramID: 12345, Username: "alice"}},
 	}
@@ -47,5 +47,13 @@ func TestRegisterUserRequestValidateRejectsNegativeDeviceLimit(t *testing.T) {
 
 	if !errors.Is(err, ErrInvalidUserRequest) {
 		t.Fatalf("expected ErrInvalidUserRequest, got %v", err)
+	}
+}
+
+func TestRegisterUserRequestValidateAllowsMissingTelegramID(t *testing.T) {
+	request := RegisterUserRequest{Username: "vk_1", ExpiresAt: time.Now().Add(time.Hour)}
+
+	if err := request.Validate(); err != nil {
+		t.Fatalf("request without telegram id failed validation: %v", err)
 	}
 }

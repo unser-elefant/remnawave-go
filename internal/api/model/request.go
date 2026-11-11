@@ -88,10 +88,13 @@ func NewCreateUserRequest(info *CreateUserInitInfo) *CreateUserRequest {
 	req := &CreateUserRequest{
 		Username:             info.Username,
 		ExpireAt:             info.ExpireAt,
-		TelegramID:           &info.TelegramID,
 		ActiveInternalSquads: info.ActiveInternalSquads,
 		HWIDDeviceLimit:      info.HWIDDeviceLimit,
 		Description:          info.Description,
+	}
+
+	if info.TelegramID != 0 {
+		req.TelegramID = &info.TelegramID
 	}
 
 	if info.Status != nil {
