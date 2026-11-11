@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.0](https://github.com/unser-elefant/remnawave-go/compare/v1.17.0...v1.18.0) (2026-11-11)
+
+
+### Features
+
+* add GetUserByUsername method and related functionality for user service ([f04542f](https://github.com/unser-elefant/remnawave-go/commit/f04542fdf4d7607eccc29caa7e6cbb15e861799f))
+
 ## [1.17.0](https://github.com/unser-elefant/remnawave-go/compare/v1.16.0...v1.17.0) (2026-11-10)
 
 
