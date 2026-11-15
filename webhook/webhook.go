@@ -33,7 +33,7 @@ func Run(ctx context.Context, cfg *Config, l logger, h *handler.Handler) error {
 	mux.HandleFunc("/webhook", h.HandleWebhook)
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("OK"))
+		_, _ = w.Write([]byte("OK"))
 	})
 
 	server := &http.Server{

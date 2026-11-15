@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
 	"github.com/unser-elefant/remnawave-go/domain"
 	"github.com/unser-elefant/remnawave-go/internal/api/model"
 	"github.com/unser-elefant/remnawave-go/internal/httpclient"

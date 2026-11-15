@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
+
 	remnawave "github.com/unser-elefant/remnawave-go"
 )
 

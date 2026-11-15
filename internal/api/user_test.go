@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+
 	"github.com/unser-elefant/remnawave-go/internal/api/model"
 	mock_httpclient "github.com/unser-elefant/remnawave-go/internal/mock/HTTPClient"
 )
@@ -42,17 +43,17 @@ func TestUserAPI_Update(t *testing.T) {
 func TestUserAPI_Revoke(t *testing.T) {
 	tests := []struct {
 		name     string
-		call     func(u *userAPI) error
+		call     func(u *UserAPI) error
 		wantBody string
 	}{
 		{
 			name:     "revoke subscription sends no body",
-			call:     func(u *userAPI) error { return u.RevokeSubscription(context.Background(), 7) },
+			call:     func(u *UserAPI) error { return u.RevokeSubscription(context.Background(), 7) },
 			wantBody: "",
 		},
 		{
 			name:     "revoke passwords sends revokeOnlyPasswords",
-			call:     func(u *userAPI) error { return u.RevokePasswords(context.Background(), 7) },
+			call:     func(u *UserAPI) error { return u.RevokePasswords(context.Background(), 7) },
 			wantBody: `{"revokeOnlyPasswords":true}`,
 		},
 	}

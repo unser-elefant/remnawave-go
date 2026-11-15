@@ -30,5 +30,4 @@ func toDomainLogin(m *model.RemnawaveWebhookServiceEventsData) domain.LoginAttem
 		Description: m.LoginAttempt.Description,
 		Password:    m.LoginAttempt.Password,
 	}
-
 }

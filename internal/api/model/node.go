@@ -56,10 +56,10 @@ type NodeInfo struct {
 	CpuModel          string   `json:"cpuModel"`
 	MemoryTotal       float64  `json:"memoryTotal"`
 	HostName          string   `json:"hostName"`
-	Platfrom          string   `json:"platform"`
+	Platform          string   `json:"platform"`
 	Release           string   `json:"relaese"`
 	Type              string   `json:"type"`
-	Version           string   `json:"verison"`
+	Version           string   `json:"version"`
 	NetworkInterfaces []string `json:"networkInterfaces"`
 }
 

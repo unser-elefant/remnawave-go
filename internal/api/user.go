@@ -12,19 +12,19 @@ import (
 	"github.com/unser-elefant/remnawave-go/internal/api/model"
 )
 
-type userAPI struct {
+type UserAPI struct {
 	baseURL string
 	c       HTTPClient
 }
 
-func NewUserAPI(baseURL string, c HTTPClient) *userAPI {
-	return &userAPI{
+func NewUserAPI(baseURL string, c HTTPClient) *UserAPI {
+	return &UserAPI{
 		baseURL: baseURL,
 		c:       c,
 	}
 }
 
-func (u *userAPI) GetStream(ctx context.Context, query model.UserStreamQuery) (*model.UsersResponse, error) {
+func (u *UserAPI) GetStream(ctx context.Context, query model.UserStreamQuery) (*model.UsersResponse, error) {
 	if u == nil || u.c == nil {
 		return nil, errors.New("user API client is not initialized")
 	}
@@ -62,7 +62,7 @@ func (u *userAPI) GetStream(ctx context.Context, query model.UserStreamQuery) (*
 	return result, nil
 }
 
-func (u *userAPI) GetByUsername(ctx context.Context, username string) (*model.SingleUserResponse, error) {
+func (u *UserAPI) GetByUsername(ctx context.Context, username string) (*model.SingleUserResponse, error) {
 	if u == nil || u.c == nil {
 		return nil, errors.New("user API client is not initialized")
 	}
@@ -99,7 +99,7 @@ func (u *userAPI) GetByUsername(ctx context.Context, username string) (*model.Si
 	return result, nil
 }
 
-func (u *userAPI) Create(ctx context.Context, req *model.CreateUserRequest) error {
+func (u *UserAPI) Create(ctx context.Context, req *model.CreateUserRequest) error {
 	if u == nil || u.c == nil {
 		return errors.New("user API client is not initialized")
 	}
@@ -133,7 +133,7 @@ func (u *userAPI) Create(ctx context.Context, req *model.CreateUserRequest) erro
 	return nil
 }
 
-func (u *userAPI) Update(ctx context.Context, req *model.UpdateUserRequest) error {
+func (u *UserAPI) Update(ctx context.Context, req *model.UpdateUserRequest) error {
 	if u == nil || u.c == nil {
 		return errors.New("user API client is not initialized")
 	}
@@ -172,15 +172,15 @@ func (u *userAPI) Update(ctx context.Context, req *model.UpdateUserRequest) erro
 	return nil
 }
 
-func (u *userAPI) RevokeSubscription(ctx context.Context, userID uint64) error {
+func (u *UserAPI) RevokeSubscription(ctx context.Context, userID uint64) error {
 	return u.revoke(ctx, userID, nil)
 }
 
-func (u *userAPI) RevokePasswords(ctx context.Context, userID uint64) error {
+func (u *UserAPI) RevokePasswords(ctx context.Context, userID uint64) error {
 	return u.revoke(ctx, userID, &model.RevokeUserSubscriptionRequest{RevokeOnlyPasswords: true})
 }
 
-func (u *userAPI) revoke(ctx context.Context, userID uint64, body *model.RevokeUserSubscriptionRequest) error {
+func (u *UserAPI) revoke(ctx context.Context, userID uint64, body *model.RevokeUserSubscriptionRequest) error {
 	if u == nil || u.c == nil {
 		return errors.New("user API client is not initialized")
 	}

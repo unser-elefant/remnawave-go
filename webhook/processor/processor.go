@@ -71,7 +71,6 @@ func (p *Processor) Process(ctx context.Context, body []byte, signature string, 
 			if err := p.uf(ctx, &webhookPayload); err != nil {
 				return fmt.Errorf("handle unknown webhook event: %w", err)
 			}
-
 		}
 
 		return fmt.Errorf(

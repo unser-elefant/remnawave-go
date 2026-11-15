@@ -9,19 +9,19 @@ import (
 	"github.com/unser-elefant/remnawave-go/internal/api/model"
 )
 
-type deviceAPI struct {
+type DeviceAPI struct {
 	baseURL string
 	c       HTTPClient
 }
 
-func NewDeviceAPI(baseURL string, c HTTPClient) *deviceAPI {
-	return &deviceAPI{
+func NewDeviceAPI(baseURL string, c HTTPClient) *DeviceAPI {
+	return &DeviceAPI{
 		baseURL: baseURL,
 		c:       c,
 	}
 }
 
-func (d *deviceAPI) GetByUserID(ctx context.Context, userID uint64) (*model.DevicesResponse, error) {
+func (d *DeviceAPI) GetByUserID(ctx context.Context, userID uint64) (*model.DevicesResponse, error) {
 	if d == nil || d.c == nil {
 		return nil, errors.New("device API client is not initialized")
 	}
@@ -56,7 +56,7 @@ func (d *deviceAPI) GetByUserID(ctx context.Context, userID uint64) (*model.Devi
 	return result, nil
 }
 
-func (d *deviceAPI) DeleteAll(ctx context.Context, userID uint64) error {
+func (d *DeviceAPI) DeleteAll(ctx context.Context, userID uint64) error {
 	if d == nil || d.c == nil {
 		return errors.New("device API client is not initialized")
 	}

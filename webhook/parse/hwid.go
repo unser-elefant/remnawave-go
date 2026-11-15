@@ -28,5 +28,4 @@ func toDomainHwid(m *model.RemnawaveWebhookUserHwidDevicesEventsData) domain.Use
 		User:           mapper.ToDomainUser(&m.User),
 		HwidUserDevice: mapper.ToDomainDevice(&m.HwidUserDevice),
 	}
-
 }

@@ -109,7 +109,7 @@ func (h *Handler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 		}
 		h.wg.Add(1)
 		h.stateMu.Unlock()
-		go h.processWebhook(body, sign, r.RemoteAddr, requestID, context.WithoutCancel(ctx))
+		go h.processWebhook(context.WithoutCancel(ctx), body, sign, r.RemoteAddr, requestID)
 
 	case <-h.lifecycleCtx.Done():
 		log.Warn("Webhook handler is shutting down")
@@ -123,7 +123,9 @@ func (h *Handler) HandleWebhook(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusAccepted)
-	json.NewEncoder(w).Encode(map[string]string{"status": "accepted"})
+	if err := json.NewEncoder(w).Encode(map[string]string{"status": "accepted"}); err != nil {
+		log.Warn("Failed to write webhook response", "error", err)
+	}
 }
 
 func (h *Handler) Shutdown(ctx context.Context) error {
@@ -147,7 +149,7 @@ func (h *Handler) Shutdown(ctx context.Context) error {
 	}
 }
 
-func (h *Handler) processWebhook(body []byte, sign, remoteAddr, requestID string, baseCtx context.Context) {
+func (h *Handler) processWebhook(baseCtx context.Context, body []byte, sign, remoteAddr, requestID string) {
 	defer h.wg.Done()
 	defer func() {
 		<-h.sem

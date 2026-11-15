@@ -98,7 +98,7 @@ func New(l Logger, cfg *Config) *Client {
 		}
 
 		tlsConfig := &tls.Config{
-			InsecureSkipVerify: cfg.InsecureSkipVerify,
+			InsecureSkipVerify: cfg.InsecureSkipVerify, //nolint:gosec // G402: explicit opt-in via Config, logged as a warning above
 			MinVersion:         tls.VersionTLS12,
 		}
 
@@ -177,7 +177,7 @@ func (c *Client) Do(req *http.Request) (*http.Response, error) {
 
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		statusErr := c.mapStatusError(reqID, urlValue, resp)
-		resp.Body.Close()
+		_ = resp.Body.Close()
 		return nil, statusErr
 	}
 
@@ -212,7 +212,7 @@ func (c *Client) mapStatusError(requestID, urlValue string, resp *http.Response)
 	respData, readErr := io.ReadAll(io.LimitReader(resp.Body, maxAPIErrorBodySize))
 	respText := string(respData)
 
-	var kind error = ErrAPIError
+	kind := ErrAPIError
 	switch resp.StatusCode {
 	case http.StatusNotFound:
 		kind = ErrResourceNotFound

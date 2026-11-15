@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
 	"github.com/unser-elefant/remnawave-go/domain"
 	"github.com/unser-elefant/remnawave-go/internal/api/model"
 	realmapper "github.com/unser-elefant/remnawave-go/internal/mapper"
@@ -237,6 +238,9 @@ func BenchmarkDeviceService_MapperToDomainSlice(b *testing.B) {
 		for i := range apiDevices {
 			domainDevices = append(domainDevices, realmapper.ToDomainDevice(&apiDevices[i]))
 		}
+		if len(domainDevices) != len(apiDevices) {
+			b.Fatalf("mapped %d devices, want %d", len(domainDevices), len(apiDevices))
+		}
 	}
 }
 
@@ -300,6 +304,9 @@ func BenchmarkDeviceService_MultipleDevicesMapping(b *testing.B) {
 			_ = dev.GetDisplayName()
 			_ = dev.HasUserAgent()
 			_ = dev.GetPlatformInfo()
+		}
+		if len(domainDevices) != len(apiDevices) {
+			b.Fatalf("mapped %d devices, want %d", len(domainDevices), len(apiDevices))
 		}
 	}
 }

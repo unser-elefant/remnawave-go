@@ -75,7 +75,6 @@ func (d *DeviceService) GetDevicesCount(ctx context.Context, userID uint64) (int
 	}
 	response, err := d.api.GetByUserID(ctx, userID)
 	if err != nil {
-
 		return 0, fmt.Errorf("failed to get devices count: %w", err)
 	}
 	if response == nil {

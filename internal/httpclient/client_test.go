@@ -30,6 +30,15 @@ func setupTestClient(t *testing.T, baseURL string) *Client {
 	return NewClient(slog.Default(), cfg)
 }
 
+func assertNoResponse(t *testing.T, resp *http.Response) {
+	t.Helper()
+
+	if resp != nil {
+		_ = resp.Body.Close()
+		t.Errorf("expected nil response, got status %d", resp.StatusCode)
+	}
+}
+
 func TestNewClient(t *testing.T) {
 	t.Run("accepts nil logger and config", func(t *testing.T) {
 		assert.NotNil(t, New(nil, nil))
@@ -147,7 +156,7 @@ func TestClient_Do(t *testing.T) {
 		var apiErr *APIError
 		assert.ErrorAs(t, err, &apiErr)
 		assert.Equal(t, http.StatusNotFound, apiErr.StatusCode)
-		assert.Nil(t, resp)
+		assertNoResponse(t, resp)
 	})
 
 	t.Run("returns ErrBadRequest on 400", func(t *testing.T) {
@@ -172,7 +181,7 @@ func TestClient_Do(t *testing.T) {
 		assert.Equal(t, "invalid parameters", apiErr.Body)
 		assert.NotEmpty(t, apiErr.RequestID)
 		assert.Contains(t, apiErr.URL, "/test")
-		assert.Nil(t, resp)
+		assertNoResponse(t, resp)
 	})
 
 	t.Run("returns ErrUnauthorized on 401", func(t *testing.T) {
@@ -190,7 +199,7 @@ func TestClient_Do(t *testing.T) {
 		resp, err := client.Do(req)
 
 		assert.ErrorIs(t, err, ErrUnauthorized)
-		assert.Nil(t, resp)
+		assertNoResponse(t, resp)
 	})
 
 	t.Run("returns ErrAPIError on 500", func(t *testing.T) {
@@ -208,7 +217,7 @@ func TestClient_Do(t *testing.T) {
 		resp, err := client.Do(req)
 
 		assert.ErrorIs(t, err, ErrAPIError)
-		assert.Nil(t, resp)
+		assertNoResponse(t, resp)
 	})
 
 	t.Run("handles context cancellation", func(t *testing.T) {
@@ -231,7 +240,7 @@ func TestClient_Do(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.True(t, errors.Is(err, context.Canceled) || strings.Contains(err.Error(), "context canceled"))
-		assert.Nil(t, resp)
+		assertNoResponse(t, resp)
 	})
 
 	t.Run("resolves relative URL using baseURL", func(t *testing.T) {
@@ -268,7 +277,7 @@ func TestClient_Do(t *testing.T) {
 		resp, err := client.Do(req)
 
 		assert.Error(t, err)
-		assert.Nil(t, resp)
+		assertNoResponse(t, resp)
 	})
 }
 
