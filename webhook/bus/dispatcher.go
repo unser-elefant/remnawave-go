@@ -3,7 +3,9 @@ package bus
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
+	"runtime/debug"
 	"sync"
 
 	"github.com/unser-elefant/remnawave-go/webhook/payload"
@@ -44,22 +46,35 @@ func (d *Dispatcher) Publish(ctx context.Context, p *payload.RemnawaveWebhook) (
 		return false, nil
 	}
 
-	var errs []error
-	for _, h := range handlers {
-		if err := ctx.Err(); err != nil {
-			errs = append(errs, err)
-			break
-		}
-		if err := h(ctx, p); err != nil {
-			errs = append(errs, err)
-		}
+	if err := ctx.Err(); err != nil {
+		return true, err
 	}
 
-	if len(errs) > 0 {
-		return true, errors.Join(errs...)
+	errs := make([]error, len(handlers))
+	var wg sync.WaitGroup
+	for i, h := range handlers {
+		wg.Go(func() {
+			errs[i] = d.runHandler(ctx, h, p)
+		})
 	}
+	wg.Wait()
 
-	return true, nil
+	return true, errors.Join(errs...)
+}
+
+func (d *Dispatcher) runHandler(ctx context.Context, h Handler, p *payload.RemnawaveWebhook) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			d.l.WithContext(ctx).Error("Panic in webhook handler",
+				"event", p.Event,
+				"scope", p.Scope,
+				"panic", r,
+				"stack", string(debug.Stack()))
+			err = fmt.Errorf("webhook handler panic: %v", r)
+		}
+	}()
+
+	return h(ctx, p)
 }
 
 func (d *Dispatcher) RegisterWebhookHandler(e payload.Event, h Handler) {
