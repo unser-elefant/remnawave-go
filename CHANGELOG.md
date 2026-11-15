@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.0](https://github.com/unser-elefant/remnawave-go/compare/v1.18.0...v1.19.0) (2026-11-15)
+
+
+### Features
+
+* enhance Dispatcher to handle errors and panics in webhook handlers concurrently ([c471499](https://github.com/unser-elefant/remnawave-go/commit/c471499d50c17ad5f8fd6d0e8b8b72a31751058e))
+
 ## [1.18.0](https://github.com/unser-elefant/remnawave-go/compare/v1.17.0...v1.18.0) (2026-11-11)
 
 
